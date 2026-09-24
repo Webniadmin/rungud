@@ -90,8 +90,23 @@ final class EventsController {
 			'event'              => self::shape( $event ),
 			'participants'       => $participants,
 			'participants_error' => $participants_error,
-			'history'            => Audit::for_entity( 'event', (string) $id ),
+			'history'            => self::history( $id, array_column( $participants, 'order_id' ) ),
 		) );
+	}
+
+	/**
+	 * Changes the back office made to this event and to its orders (names per place, refunds), newest first.
+	 *
+	 * @param list<int> $order_ids
+	 * @return list<array<string,mixed>>
+	 */
+	private static function history( int $event_id, array $order_ids ): array {
+		$rows = Audit::for_entity( 'event', (string) $event_id );
+		foreach ( array_unique( $order_ids ) as $order_id ) {
+			$rows = array_merge( $rows, Audit::for_entity( 'order', (string) $order_id ) );
+		}
+		usort( $rows, static fn( $a, $b ) => $b['id'] <=> $a['id'] );
+		return $rows;
 	}
 
 	/** @param array<string,mixed> $e @return array<string,mixed> */

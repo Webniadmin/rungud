@@ -17,6 +17,7 @@ export function Dialog({
   error,
   tone = 'primary',
   disabled,
+  noCancel,
 }: {
   title: string
   consequence?: ReactNode
@@ -28,6 +29,8 @@ export function Dialog({
   error?: string | null
   tone?: 'primary' | 'warn'
   disabled?: boolean
+  /** Information-only dialogs (e.g. "code created") have one button. */
+  noCancel?: boolean
 }) {
   const { t } = useTranslation()
   useEffect(() => {
@@ -47,7 +50,7 @@ export function Dialog({
         {consequence ? <p style={{ marginTop: 14 }}>{consequence}</p> : null}
         {error ? <div className="note bad" role="alert" style={{ marginTop: 12 }}>{error}</div> : null}
         <div className="acts">
-          <button type="button" className="btn" onClick={onClose} disabled={busy}>{t('common.cancel')}</button>
+          {noCancel ? null : <button type="button" className="btn" onClick={onClose} disabled={busy}>{t('common.cancel')}</button>}
           <button type="submit" className={`btn ${tone}`} disabled={busy || disabled}>{busy ? t('state.working') : confirmLabel}</button>
         </div>
       </form>

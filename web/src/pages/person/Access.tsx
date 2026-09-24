@@ -426,7 +426,7 @@ function CodeDialog({ userId, name, email, onClose }: { userId: number; name: st
     const lang = i18n.language === 'de' ? 'de' : 'en'
     const text = t('codes.message', { lng: lang, first: name.split(' ')[0], code: created.code, days: created.days, date: formatDate(created.code_valid_until) })
     return (
-      <Dialog title={t('codes.created')} confirmLabel={t('common.close')} onConfirm={onClose} onClose={onClose}>
+      <Dialog title={t('codes.created')} confirmLabel={t('common.close')} onConfirm={onClose} onClose={onClose} noCancel>
         <div style={{ fontSize: 28, letterSpacing: '.08em', margin: '6px 0 12px' }} className="num">{created.code}</div>
         <p className="mut">{t('codes.onlyOnce')}</p>
         <div className="btnrow">

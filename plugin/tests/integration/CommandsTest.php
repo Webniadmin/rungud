@@ -183,7 +183,9 @@ final class CommandsTest extends TestCase {
 		SiteStore::$programs = array(
 			array( 'id' => 1, 'slug' => 'breath-coach', 'title' => 'Breath Coach', 'audience' => 'b2b', 'takes_licence' => true, 'licence_prefix' => 'BW', 'certification_numbers' => array( 'BW-0758', 'BW-1043' ) ),
 		);
-		update_user_meta( $this->jonas->ID, '_inzentive_licenses', array( 1 => array( 'certificate_number' => 'BW-2210' ) ) );
+		update_user_meta( $this->jonas->ID, '_inzentive_licenses', array( 1 => array( 'certificate_number' => 'BW-2210', 'status' => 'verified' ) ) );
+		// A rejected self-reported number was never issued and must not move the sequence.
+		update_user_meta( $this->robert->ID, '_inzentive_licenses', array( 1 => array( 'certificate_number' => 'BW-9999', 'status' => 'rejected' ) ) );
 		$items = $this->call( 'GET', '/programs' )->get_data()['items'];
 		$this->assertSame( 'BW-2211', $items[0]['next_number'] );
 	}

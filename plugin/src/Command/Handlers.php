@@ -204,8 +204,8 @@ final class Handlers {
 		return Commands::run(
 			array(
 				'kind' => 'attendees', 'params' => $p, 'entity' => 'order', 'entity_id' => (string) $order->get_id(),
-				'summary_en' => "Names for {$count} places on order #{$order->get_order_number()} ({$item->get_name()}): {$names}.",
-				'summary_de' => "Namen für {$count} Plätze in Bestellung #{$order->get_order_number()} ({$item->get_name()}): {$names}.",
+				'summary_en' => "Names per place on order #{$order->get_order_number()} ({$item->get_name()}, {$count}): {$names}.",
+				'summary_de' => "Namen pro Platz in Bestellung #{$order->get_order_number()} ({$item->get_name()}, {$count}): {$names}.",
 				'request_id' => $rid, 'retry_of' => $retry, 'before' => $before,
 			),
 			static function () use ( $item, $p ) {

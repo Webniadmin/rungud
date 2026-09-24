@@ -58,7 +58,7 @@ export function AuditList({ rows, empty }: { rows: AuditRow[]; empty: string }) 
                 {r.error ? <div className="mut">{r.error}</div> : null}
               </td>
               <td>
-                {r.status === 'ok' ? <Badge tone="ok">{t('sync.ok')}</Badge> : r.status === 'refused' ? <Badge tone="warn">{t('sync.refused')}</Badge> : r.open ? <Badge tone="bad">{t('sync.failed')}</Badge> : <Badge tone="neu">{t('sync.failedRetried')}</Badge>}
+                {r.status === 'ok' ? <Badge tone="ok">{t('sync.ok')}</Badge> : r.status === 'refused' ? <Badge tone="warn">{t('sync.refused')}</Badge> : r.open ? <Badge tone="bad">{t('sync.failed')}</Badge> : r.retry_of ? <Badge tone="neu">{t('sync.retryFailed')}</Badge> : <Badge tone="neu">{t('sync.failedRetried')}</Badge>}
                 {r.open && r.retryable && can('write') ? <div style={{ marginTop: 6 }}><button type="button" className="btn sm primary" onClick={() => setRetry(r)}>{t('sync.retry')}</button></div> : null}
               </td>
             </tr>

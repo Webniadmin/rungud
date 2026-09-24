@@ -500,7 +500,8 @@
     "refused": "Abgelehnt",
     "retry": "Erneut senden",
     "retryTitle": "Erneut senden?",
-    "retryConsequence": "Das wird noch einmal an die Website geschickt: {{summary}}"
+    "retryConsequence": "Das wird noch einmal an die Website geschickt: {{summary}}",
+    "retryFailed": "Wiederholung fehlgeschlagen"
   },
   "owners": {
     "people": {

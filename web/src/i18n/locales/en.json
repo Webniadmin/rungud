@@ -500,7 +500,8 @@
     "refused": "Refused",
     "retry": "Retry",
     "retryTitle": "Send it again?",
-    "retryConsequence": "This is sent to the website again: {{summary}}"
+    "retryConsequence": "This is sent to the website again: {{summary}}",
+    "retryFailed": "Retry failed"
   },
   "owners": {
     "people": {

@@ -7,7 +7,7 @@ use Rungud\Install\Schema;
 
 /**
  * Proposes the next licence number PREFIX-SEQ. Looks at every number already
- * in use — the site's licences (read from user meta, never written), the
+ * in use — the site's licences except rejected ones (read from user meta, never written), the
  * programme's known certification numbers and the CMS's certificates — and
  * suggests max + 1, zero-padded to four digits. Gudrun can change it.
  */
@@ -24,6 +24,10 @@ final class LicenceNumbers {
 		array_map( $scan, $known );
 		foreach ( get_users( array( 'meta_key' => '_inzentive_licenses', 'fields' => 'ID', 'number' => -1 ) ) as $uid ) {
 			foreach ( (array) get_user_meta( (int) $uid, '_inzentive_licenses', true ) as $record ) {
+				// A rejected self-reported number was never issued — it does not move the sequence.
+				if ( 'rejected' === ( $record['status'] ?? '' ) ) {
+					continue;
+				}
 				$scan( (string) ( $record['certificate_number'] ?? '' ) );
 			}
 		}
