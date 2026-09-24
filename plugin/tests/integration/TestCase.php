@@ -8,7 +8,7 @@ use Rungud\Capabilities;
 
 abstract class TestCase extends \WP_UnitTestCase {
 
-	protected function set_up(): void {
+	public function set_up(): void {
 		parent::set_up();
 		Guard::reset();
 		\Rungud\Settings::flush();

@@ -13,7 +13,7 @@ namespace Rungud\Tests\Integration;
  */
 abstract class LocalSiteTestCase extends TestCase {
 
-	protected function set_up(): void {
+	public function set_up(): void {
 		parent::set_up();
 		if ( ! defined( 'LEARNDASH_VERSION' ) ) {
 			$this->markTestSkipped( 'LearnDash is not installed — local-site tests need the site team\'s copy.' );
