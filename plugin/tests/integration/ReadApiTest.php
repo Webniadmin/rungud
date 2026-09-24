@@ -179,11 +179,13 @@ final class ReadApiTest extends TestCase {
 		$item->set_quantity( 4 );
 		$item->set_subtotal( '3330.25' );
 		$item->set_total( '3330.25' );
-		$item->set_total_tax( '269.75' );
-		$item->add_meta_data( '_inzentive_event_id', 21 );
+		$item->set_taxes( array( 'total' => array( 1 => '269.75' ), 'subtotal' => array( 1 => '269.75' ) ) );
+		$item->add_meta_data( '_inzentive_event_id', 21, true );
 		$order->add_item( $item );
 		$order->set_currency( 'EUR' );
 		$order->save();
+		$item->save();
+		$this->assertSame( '269.75', wc_format_decimal( wc_get_order( $order->get_id() )->get_item( $item->get_id() )->get_total_tax(), 2 ), 'fixture: tax stored on the line' );
 		SiteStore::$events    = array( array( 'id' => 21, 'slug' => 'zen', 'title' => 'Zen Flow Retreat', 'start' => '2030-11-23', 'end' => '2030-11-27' ) );
 		// The site's own row carries the net line total.
 		SiteStore::$attendees = array( 21 => array( array( 'order_id' => $order->get_id(), 'order_number' => (string) $order->get_id(), 'name' => 'Petra Schmidt', 'email' => 'p@x', 'quantity' => 4, 'total' => 3330.25, 'status' => 'processing', 'paid' => true, 'date' => '2026-09-24 12:00' ) ) );
