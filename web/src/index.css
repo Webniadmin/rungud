@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+/* Design tokens from docs/prototype.html (:root) — build-package.md §A6. */
+@theme {
+  --font-sans: Inter, "Helvetica Neue", Arial, sans-serif;
+
+  --color-paper: #F7F5F3;
+  --color-surface: #FFFFFF;
+  --color-line: #E2DDD9;
+  --color-line-strong: #CFC8C2;
+  --color-slate: #1E2C36;
+  --color-slate-2: #121A20;
+  --color-ink: #0D0D0D;
+  --color-ink-2: #646260;
+  --color-ink-3: #8F8D8A;
+  --color-accent: #586C7B;
+  --color-accent-dark: #1E2C36;
+  --color-warm: #928176;
+  --color-rail-text: #E6E2DD;
+
+  --color-ok-bg: #E8EFE8;
+  --color-ok-fg: #3F5D45;
+  --color-warn-bg: #F6EFE2;
+  --color-warn-fg: #7A5B24;
+  --color-bad-bg: #F4E7E5;
+  --color-bad-fg: #7A3B33;
+  --color-neu-bg: #EFEDEA;
+  --color-neu-fg: #646260;
+
+  --radius-DEFAULT: 3px;
+  --spacing-rail: 248px;
+}
+
+@layer base {
+  body {
+    @apply bg-paper text-ink font-sans antialiased;
+    font-size: 16px;
+    line-height: 1.5;
+    font-variant-numeric: tabular-nums;
+  }
+}

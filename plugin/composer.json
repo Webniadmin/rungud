@@ -1,0 +1,34 @@
+{
+    "name": "inzentive/rungud-cms",
+    "description": "rungud CMS — back office for inZENtive, living inside the WordPress site.",
+    "type": "wordpress-plugin",
+    "license": "proprietary",
+    "require": {
+        "php": ">=8.1",
+        "stripe/stripe-php": "^17.0",
+        "dompdf/dompdf": "^3.0",
+        "firebase/php-jwt": "^7.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.6",
+        "yoast/phpunit-polyfills": "^2.0",
+        "wp-phpunit/wp-phpunit": "^6.6"
+    },
+    "autoload": {
+        "psr-4": { "Rungud\\": "src/" }
+    },
+    "autoload-dev": {
+        "psr-4": { "Rungud\\Tests\\": "tests/" }
+    },
+    "config": {
+        "platform": { "php": "8.1.0" },
+        "sort-packages": true,
+        "optimize-autoloader": true
+    },
+    "scripts": {
+        "lint": "find rungud-cms.php src tests -name '*.php' -print0 | xargs -0 -n1 php -l > /dev/null",
+        "test:unit": "phpunit -c phpunit.xml.dist --testsuite unit",
+        "test:integration": "wp-env run tests-cli --env-cwd=wp-content/plugins/rungud-cms vendor/bin/phpunit -c phpunit-integration.xml.dist",
+        "test": ["@lint", "@test:unit"]
+    }
+}

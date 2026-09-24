@@ -1,0 +1,13 @@
+{
+  "name": "rungud-plugin-dev",
+  "private": true,
+  "description": "Dev tooling only (wp-env). Not shipped.",
+  "scripts": {
+    "env:start": "wp-env start",
+    "env:stop": "wp-env stop",
+    "test:integration": "composer test:integration"
+  },
+  "devDependencies": {
+    "@wordpress/env": "^10.0.0"
+  }
+}

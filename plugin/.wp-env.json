@@ -1,0 +1,17 @@
+{
+    "core": "WordPress/WordPress#6.8",
+    "phpVersion": "8.1",
+    "plugins": [
+        "https://downloads.wordpress.org/plugin/woocommerce.latest-stable.zip"
+    ],
+    "mappings": {
+        "wp-content/plugins/rungud-cms": "."
+    },
+    "config": {
+        "RUNGUD_JWT_SECRET": "local-dev-only-not-a-secret-change-me-0000000000",
+        "RUNGUD_CORS_ORIGINS": "http://localhost:5173"
+    },
+    "lifecycleScripts": {
+        "afterStart": "npx wp-env run cli wp plugin activate rungud-cms && npx wp-env run tests-cli wp plugin activate rungud-cms"
+    }
+}
