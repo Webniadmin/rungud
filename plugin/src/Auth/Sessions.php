@@ -16,6 +16,13 @@ final class Sessions {
 
 	public const REFRESH_TTL = 30 * DAY_IN_SECONDS;
 
+	/**
+	 * A token rotated this recently may be presented once more without ending
+	 * the session: a page reload or a second tab can lose the response that
+	 * carried its successor. Older replays still count as theft.
+	 */
+	public const REUSE_GRACE = 60;
+
 	/** @return array{refresh_token:string, family:string} */
 	public static function start( int $user_id ): array {
 		$family = wp_generate_uuid4();
@@ -40,6 +47,15 @@ final class Sessions {
 			throw new InvalidToken( 'Unknown refresh token.' );
 		}
 		if ( null !== $row['revoked_at'] ) {
+			$rotated_ago = time() - (int) strtotime( $row['revoked_at'] . ' UTC' );
+			if ( 'rotated' === $row['revoked_reason'] && $rotated_ago <= self::REUSE_GRACE && self::is_active( $row['family'] ) ) {
+				$user_id = (int) $row['user_id'];
+				return array(
+					'user_id'       => $user_id,
+					'family'        => $row['family'],
+					'refresh_token' => self::insert( $user_id, $row['family'] ),
+				);
+			}
 			self::revoke_family( $row['family'], 'reuse' );
 			throw new InvalidToken( 'Refresh token was already used.' );
 		}

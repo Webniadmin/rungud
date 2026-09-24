@@ -62,3 +62,35 @@ describe('api client', () => {
     await expect(client.login('g', 'bad')).rejects.toMatchObject({ code: 'rungud_bad_credentials', status: 401 })
   })
 })
+
+describe('api client across tabs', () => {
+  beforeEach(() => {
+    client.__resetForTests()
+    localStorage.clear()
+  })
+  afterEach(() => vi.unstubAllGlobals())
+
+  it('reads the refresh token inside the tab lock, after another tab rotated it', async () => {
+    localStorage.setItem('rungud.refresh', 'R1')
+    const sent: string[] = []
+    // Simulated lock: before our callback runs, "another tab" rotates the token.
+    vi.stubGlobal('navigator', {
+      locks: {
+        request: async (_name: string, fn: () => Promise<unknown>) => {
+          localStorage.setItem('rungud.refresh', 'R2-from-other-tab')
+          return fn()
+        },
+      },
+    })
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (_url: string, init: RequestInit) => {
+        sent.push(JSON.parse(String(init.body)).refresh_token)
+        return json(200, { access_token: 'A3', refresh_token: 'R3', expires_in: 900, user })
+      }),
+    )
+    await client.refresh()
+    expect(sent).toEqual(['R2-from-other-tab'])
+    expect(localStorage.getItem('rungud.refresh')).toBe('R3')
+  })
+})

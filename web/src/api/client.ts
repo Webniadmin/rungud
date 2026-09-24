@@ -100,12 +100,24 @@ export async function login(username: string, password: string): Promise<Me> {
   return accept(body as TokenResponse)
 }
 
-/** Restores a session from the stored refresh token. Single-flight. */
+/**
+ * Runs `fn` while holding a lock shared by every tab of this origin, so two
+ * tabs never present the same refresh token at once. Falls back to no lock
+ * where Web Locks are missing (the server's 60 s reuse grace covers that).
+ */
+function withTabLock<T>(fn: () => Promise<T>): Promise<T> {
+  const locks = typeof navigator !== 'undefined' ? (navigator as Navigator & { locks?: LockManager }).locks : undefined
+  return locks ? (locks.request('rungud.refresh', fn) as Promise<T>) : fn()
+}
+
+/** Restores a session from the stored refresh token. Single-flight in this tab, serialised across tabs. */
 export function refresh(): Promise<Me | null> {
   if (refreshing) return refreshing
-  const token = storageGet()
-  if (!token) return Promise.resolve(null)
-  refreshing = (async () => {
+  if (!storageGet()) return Promise.resolve(null)
+  refreshing = withTabLock(async () => {
+    // Read inside the lock: another tab may have rotated the token meanwhile.
+    const token = storageGet()
+    if (!token) return null
     try {
       const res = await raw('/auth/refresh', { method: 'POST', body: JSON.stringify({ refresh_token: token }) })
       const body = await parse(res)
@@ -121,7 +133,7 @@ export function refresh(): Promise<Me | null> {
     } finally {
       refreshing = null
     }
-  })()
+  })
   return refreshing
 }
 

@@ -72,12 +72,28 @@ final class AuthTest extends TestCase {
 		$this->assertSame( 'rungud_invalid_token', \Rungud\Auth\Guard::authentication_errors( null )->get_error_code() );
 	}
 
+	private function age_rotation( string $refresh_token, int $seconds ): void {
+		global $wpdb;
+		$wpdb->query( $wpdb->prepare( 'UPDATE ' . \Rungud\Install\Schema::table( 'sessions' ) . ' SET revoked_at = %s WHERE token_hash = %s', gmdate( 'Y-m-d H:i:s', time() - $seconds ), hash( 'sha256', $refresh_token ) ) );
+	}
+
+	public function test_a_just_rotated_token_survives_a_lost_response(): void {
+		$data = $this->login( $this->make_user( C::ROLE_BACKOFFICE ) );
+		$this->assertSame( 200, $this->call( 'POST', '/auth/refresh', array( 'refresh_token' => $data['refresh_token'] ) )->get_status() );
+		// The page reloaded before it stored the successor: the old token comes back seconds later.
+		$again = $this->call( 'POST', '/auth/refresh', array( 'refresh_token' => $data['refresh_token'] ) );
+		$this->assertSame( 200, $again->get_status() );
+		$this->authenticate_bearer( $again->get_data()['access_token'] );
+		$this->assertGreaterThan( 0, get_current_user_id() );
+	}
+
 	public function test_refresh_rotates_and_reuse_ends_the_session(): void {
 		$data    = $this->login( $this->make_user( C::ROLE_BACKOFFICE ) );
 		$rotated = $this->call( 'POST', '/auth/refresh', array( 'refresh_token' => $data['refresh_token'] ) );
 		$this->assertSame( 200, $rotated->get_status() );
 		$new = $rotated->get_data();
 		$this->assertNotSame( $data['refresh_token'], $new['refresh_token'] );
+		$this->age_rotation( $data['refresh_token'], \Rungud\Auth\Sessions::REUSE_GRACE + 5 );
 
 		// The old refresh token again = stolen or raced: the whole session ends.
 		$this->assertError( $this->call( 'POST', '/auth/refresh', array( 'refresh_token' => $data['refresh_token'] ) ), 401, 'rungud_invalid_token' );
