@@ -15,6 +15,10 @@ These rules are copied verbatim from `docs/PROMPT.md` §7. They apply to every c
 10. Do not build a second database, a sync layer, webhooks between the site and the CMS, or a copy of Woo/LearnDash data. If a design seems to need one, stop and say so.
 11. Before each phase: read the matching prototype screens and the matching section of `build-package.md`. After each phase: run the acceptance tests for it (`build-package.md` Part G + `website-integration.md` §7), then stop and report.
 
+## Where the work stands
+
+Read `docs/STATUS.md` first: phase status, decisions taken, what is waiting on the site team, and the plan for the next session. Update it at the end of every phase.
+
 ## Repo layout
 
 - `plugin/` — WordPress plugin `rungud-cms` (PHP 8.1+). Owns tables, REST API `/wp-json/rungud/v1/*`, capabilities, PDFs, Stripe webhook, cron, audit.

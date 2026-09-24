@@ -7,7 +7,7 @@ Back office for inZENtive. Two deliverables:
 | `plugin/` | WordPress plugin `rungud-cms` — tables, REST API `/wp-json/rungud/v1`, business rules, PDFs, Stripe webhook, audit | inside the inZENtive WordPress site |
 | `web/` | React UI, renders only | Vercel |
 
-Rules: see [CLAUDE.md](CLAUDE.md). Build instructions: [docs/PROMPT.md](docs/PROMPT.md).
+Rules: see [CLAUDE.md](CLAUDE.md). Build instructions: [docs/PROMPT.md](docs/PROMPT.md). **Current status and next steps: [docs/STATUS.md](docs/STATUS.md).**
 
 ## Plugin
 

@@ -90,6 +90,8 @@ This is the deliverable she asked for. On the person page, a tab **Access, membe
 
 ### Endpoints the site provides (`/wp-json/inzentive/v1/`)
 
+*State on 24.09.2026 (local copy, `app/api.php` not yet committed): `GET /programs`, `/plans`, `/events`, `/access/{id}`, `/licences/{id}`, `/licences/pending`, `POST /licences`, `/licences/{user}/{program}/verify|reject|revoke`, `/access/grant` exist. The three `/membership/*` routes do **not** exist yet — the CMS discovers them and enables its buttons when they appear. See `docs/STATUS.md` → "Waiting on the site team".*
+
 | Endpoint | Action |
 |---|---|
 | `GET /access/{user_id}` | plan, groups, licences, valid card, courses + completion, **`stripe_customer_id`, `stripe_subscription_id`** — the CMS reads membership invoices straight from Stripe with those (LearnDash does not record Stripe renewals) |
