@@ -21,9 +21,21 @@ namespace Rungud\Tests\Fixtures {
 		public static array $plan_members = array();
 		/** @var array<int,string> user id → plan slug */
 		public static array $active = array();
+		/** @var list<array{route:string, params:array<string,mixed>, key:string}> commands the site received */
+		public static array $received = array();
+		/** @var array<string,\WP_Error> route → error to answer with */
+		public static array $fail = array();
+		/** @var list<array<string,mixed>> */
+		public static array $programs = array();
 
 		public static function reset(): void {
-			self::$access = self::$events = self::$attendees = self::$waiting = self::$plan_members = self::$active = array();
+			self::$access = self::$events = self::$attendees = self::$waiting = self::$plan_members = self::$active = self::$received = self::$fail = self::$programs = array();
+		}
+
+		/** @return \WP_Error|array<string,mixed> */
+		public static function command( string $route, \WP_REST_Request $r ) {
+			self::$received[] = array( 'route' => $route, 'params' => $r->get_params(), 'key' => (string) $r->get_header( 'idempotency_key' ) );
+			return self::$fail[ $route ] ?? array( 'ok' => true, 'route' => $route );
 		}
 	}
 }
@@ -99,6 +111,19 @@ namespace {
 				'callback'            => static fn() => SiteStore::$events,
 				'permission_callback' => 'App\\api_can',
 			) );
+			register_rest_route( 'inzentive/v1', '/programs', array( 'methods' => 'GET', 'callback' => static fn() => SiteStore::$programs, 'permission_callback' => 'App\\api_can' ) );
+			register_rest_route( 'inzentive/v1', '/plans', array(
+				'methods'             => 'GET',
+				'callback'            => static fn() => array(
+					array( 'slug' => 'membership-annual', 'title' => 'Annual', 'audience' => 'b2c', 'professional' => false, 'price' => 192.0, 'currency' => 'EUR' ),
+					array( 'slug' => 'instructor-annual', 'title' => 'Instructor', 'audience' => 'b2b', 'professional' => true, 'price' => 200.0, 'currency' => 'EUR' ),
+				),
+				'permission_callback' => 'App\\api_can',
+			) );
+			register_rest_route( 'inzentive/v1', '/licences/pending', array( 'methods' => 'GET', 'callback' => static fn() => array(), 'permission_callback' => 'App\\api_can' ) );
+			register_rest_route( 'inzentive/v1', '/licences', array( 'methods' => 'POST', 'callback' => static fn( $r ) => SiteStore::command( '/licences', $r ), 'permission_callback' => 'App\\api_can' ) );
+			register_rest_route( 'inzentive/v1', '/licences/(?P<user_id>\d+)/(?P<program>[a-z0-9-]+)/(?P<verdict>verify|reject|revoke)', array( 'methods' => 'POST', 'callback' => static fn( $r ) => SiteStore::command( '/licences/verdict', $r ), 'permission_callback' => 'App\\api_can' ) );
+			register_rest_route( 'inzentive/v1', '/access/grant', array( 'methods' => 'POST', 'callback' => static fn( $r ) => SiteStore::command( '/access/grant', $r ), 'permission_callback' => 'App\\api_can' ) );
 			register_rest_route( 'inzentive/v1', '/access/(?P<user_id>\d+)', array(
 				'methods'             => 'GET',
 				'callback'            => static function ( \WP_REST_Request $r ) {

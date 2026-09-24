@@ -23,6 +23,7 @@ final class Settings {
 		'smtp_pass'             => array( 'secret' => true ),
 		'smtp_from'             => array( 'secret' => false ),
 		'smtp_from_name'        => array( 'secret' => false ),
+		'pricing_url'           => array( 'secret' => false ),
 	);
 
 	/** @var array<string,mixed>|null */

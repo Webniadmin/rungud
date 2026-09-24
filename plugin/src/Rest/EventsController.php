@@ -132,11 +132,15 @@ final class EventsController {
 		$user_id = $order ? (int) $order->get_customer_id() : 0;
 		// The site's row carries the line total without VAT; everywhere else the CMS shows what the
 		// customer paid. Take the stored gross of this event's line(s) so both screens agree.
-		$gross = null;
+		$gross     = null;
+		$line      = null;
+		$attendees = array();
 		if ( $order ) {
-			foreach ( $order->get_items() as $item ) {
+			foreach ( $order->get_items() as $item_id => $item ) {
 				if ( (int) $item->get_meta( '_inzentive_event_id' ) === $event_id ) {
-					$gross = ( $gross ?? 0.0 ) + (float) $item->get_total() + (float) $item->get_total_tax();
+					$gross     = ( $gross ?? 0.0 ) + (float) $item->get_total() + (float) $item->get_total_tax();
+					$line      = $line ?? (int) $item_id;
+					$attendees = array_merge( $attendees, \Rungud\Woo\Attendees::read( $item ) );
 				}
 			}
 		}
@@ -154,6 +158,8 @@ final class EventsController {
 			'paid'         => (bool) ( $row['paid'] ?? false ),
 			'date'         => isset( $row['date'] ) ? substr( (string) $row['date'], 0, 10 ) : null,
 			'user_id'      => $user_id ?: null,
+			'item_id'      => $line,
+			'attendees'    => $attendees,
 			'membership'   => $user ? PeopleController::row( $user )['membership'] : 'none',
 			// Not stored on the site yet — shown as "not available", never guessed.
 			'health_declaration' => null,

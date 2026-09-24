@@ -108,6 +108,13 @@ final class TodayController {
 						'summary_de' => $first['summary_de'],
 					) : array(),
 				);
+			case 'licences_pending':
+				try {
+					$pending = \Rungud\Site\SiteApi::get( '/licences/pending' );
+				} catch ( \Rungud\Site\SiteUnavailable $e ) {
+					return null;
+				}
+				return array( 'count' => count( $pending ), 'params' => array() );
 			default:
 				return null;
 		}

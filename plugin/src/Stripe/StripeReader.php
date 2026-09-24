@@ -23,6 +23,16 @@ final class StripeReader {
 		return null !== self::$factory || '' !== (string) Config::get( 'STRIPE_SECRET_KEY', '' );
 	}
 
+	/** One invoice, for sending its PDF. @return array{id:string, number:?string, pdf:?string} */
+	public static function invoice( string $invoice_id ): array {
+		if ( ! self::configured() ) {
+			throw new \RuntimeException( 'Stripe is not configured.' );
+		}
+		$client = self::$factory ? ( self::$factory )() : new \Stripe\StripeClient( (string) Config::get( 'STRIPE_SECRET_KEY' ) );
+		$inv    = $client->invoices->retrieve( $invoice_id );
+		return array( 'id' => (string) $inv->id, 'number' => $inv->number ?? null, 'pdf' => $inv->invoice_pdf ?? null );
+	}
+
 	/**
 	 * @return list<array{id:string, number:?string, date:?string, amount:?string, currency:string, status:string, pdf:?string, subscription_id:?string}>
 	 * @throws \RuntimeException when Stripe is not configured or answers with an error

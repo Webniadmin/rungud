@@ -12,8 +12,11 @@ use Rungud\Install\Schema;
  */
 final class Audit {
 
-	public const OK     = 'ok';
-	public const FAILED = 'failed';
+	public const OK      = 'ok';
+	/** Did not reach its target (site down, error, missing route) — shows on Today with Retry. */
+	public const FAILED  = 'failed';
+	/** Reached the website and was refused (e.g. a reason missing) — shown in the dialog, logged, not on Today. */
+	public const REFUSED = 'refused';
 
 	/**
 	 * @param array{
@@ -30,7 +33,7 @@ final class Audit {
 			}
 		}
 		$status = $row['status'] ?? self::OK;
-		if ( ! in_array( $status, array( self::OK, self::FAILED ), true ) ) {
+		if ( ! in_array( $status, array( self::OK, self::FAILED, self::REFUSED ), true ) ) {
 			throw new \InvalidArgumentException( "Unknown audit status: {$status}" );
 		}
 
@@ -51,6 +54,7 @@ final class Audit {
 			'summary_de'  => $row['summary_de'],
 			'request_id'  => $row['request_id'] ?? null,
 			'retry_of'    => $row['retry_of'] ?? null,
+			'command_json' => isset( $row['command'] ) ? wp_json_encode( $row['command'] ) : null,
 		);
 		if ( false === $wpdb->insert( Schema::table( 'audit' ), $data ) ) {
 			// An audit row that cannot be written must stop the caller: nothing is silent.
@@ -93,12 +97,12 @@ final class Audit {
 		global $wpdb;
 		$t   = Schema::table( 'audit' );
 		$sql = $wpdb->prepare(
-			// retry_of always points at the original failure, so one successful retry resolves it.
+			// retry_of always points at the original failure; a retry that reached the site (ok or refused) resolves it.
 			"SELECT f.* FROM {$t} f
 			 WHERE f.status = 'failed'
 			   AND f.retry_of IS NULL
 			   AND NOT EXISTS (
-			     SELECT 1 FROM {$t} r WHERE r.status = 'ok' AND r.retry_of = f.id
+			     SELECT 1 FROM {$t} r WHERE r.status IN ('ok','refused') AND r.retry_of = f.id
 			   )
 			 ORDER BY f.created_at DESC, f.id DESC
 			 LIMIT %d",
@@ -113,8 +117,26 @@ final class Audit {
 		return (int) $wpdb->get_var(
 			"SELECT COUNT(*) FROM {$t} f
 			 WHERE f.status = 'failed' AND f.retry_of IS NULL
-			   AND NOT EXISTS (SELECT 1 FROM {$t} r WHERE r.status = 'ok' AND r.retry_of = f.id)"
+			   AND NOT EXISTS (SELECT 1 FROM {$t} r WHERE r.status IN ('ok','refused') AND r.retry_of = f.id)"
 		); // phpcs:ignore WordPress.DB.PreparedSQL
+	}
+
+	/** The raw row including the stored command, for a manual retry. @return array<string,mixed>|null */
+	public static function find( int $id ): ?array {
+		global $wpdb;
+		$row = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM ' . Schema::table( 'audit' ) . ' WHERE id = %d', $id ), ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL
+		if ( ! $row ) {
+			return null;
+		}
+		$row['command'] = $row['command_json'] ? json_decode( $row['command_json'], true ) : null;
+		return $row;
+	}
+
+	/** @return array<string,mixed>|null the row recorded for a client request id, if any */
+	public static function by_request_id( string $request_id ): ?array {
+		global $wpdb;
+		$row = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM ' . Schema::table( 'audit' ) . ' WHERE request_id = %s', $request_id ), ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL
+		return $row ? self::shape( $row ) : null;
 	}
 
 	/** @return list<array<string,mixed>> newest first */
@@ -154,7 +176,7 @@ final class Audit {
 		$ids      = array_column( array_filter( $items, static fn( $r ) => self::FAILED === $r['status'] ), 'id' );
 		if ( $ids ) {
 			$in       = implode( ',', array_map( 'intval', $ids ) );
-			$resolved = array_map( 'intval', (array) $wpdb->get_col( "SELECT DISTINCT retry_of FROM {$t} WHERE status = 'ok' AND retry_of IN ({$in})" ) ); // phpcs:ignore WordPress.DB.PreparedSQL
+			$resolved = array_map( 'intval', (array) $wpdb->get_col( "SELECT DISTINCT retry_of FROM {$t} WHERE status IN ('ok','refused') AND retry_of IN ({$in})" ) ); // phpcs:ignore WordPress.DB.PreparedSQL
 		}
 		foreach ( $items as &$item ) {
 			$item['open'] = self::FAILED === $item['status'] && null === $item['retry_of'] && ! in_array( $item['id'], $resolved, true );
@@ -179,9 +201,10 @@ final class Audit {
 		$row['id']       = (int) $row['id'];
 		$row['actor_id'] = null === $row['actor_id'] ? null : (int) $row['actor_id'];
 		$row['retry_of'] = null === $row['retry_of'] ? null : (int) $row['retry_of'];
-		$row['before']   = null === $row['before_json'] ? null : json_decode( $row['before_json'], true );
-		$row['after']    = null === $row['after_json'] ? null : json_decode( $row['after_json'], true );
-		unset( $row['before_json'], $row['after_json'] );
+		$row['before']    = null === $row['before_json'] ? null : json_decode( $row['before_json'], true );
+		$row['after']     = null === $row['after_json'] ? null : json_decode( $row['after_json'], true );
+		$row['retryable'] = self::FAILED === $row['status'] && ! empty( $row['command_json'] );
+		unset( $row['before_json'], $row['after_json'], $row['command_json'] );
 		return $row;
 	}
 }

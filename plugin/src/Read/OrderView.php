@@ -23,6 +23,7 @@ final class OrderView {
 				'total'      => Money::dec( (float) $item->get_total() + (float) $item->get_total_tax() ),
 				'product_id' => (int) $item->get_product_id(),
 				'event_id'   => $event_id ?: null,
+				'attendees'  => \Rungud\Woo\Attendees::read( $item ),
 			);
 		}
 		$created = $order->get_date_created();
@@ -43,6 +44,7 @@ final class OrderView {
 			'refunded'    => Money::dec( $order->get_total_refunded() ),
 			'currency'    => $order->get_currency(),
 			'invoice_pdf' => null,
+			'refund'      => \Rungud\Woo\Refunds::options( $order ),
 		);
 	}
 }

@@ -14,7 +14,7 @@ namespace Rungud\Install;
  */
 final class Schema {
 
-	public const DB_VERSION = '1';
+	public const DB_VERSION = '2';
 	public const OPTION     = 'rungud_db_version';
 
 	/** @return list<string> table names without prefix */
@@ -56,6 +56,7 @@ final class Schema {
   summary_de text NOT NULL,
   request_id char(36) NULL,
   retry_of bigint(20) unsigned NULL,
+  command_json longtext NULL,
   PRIMARY KEY  (id),
   KEY entity (entity,entity_id),
   KEY status (status,created_at),
@@ -270,6 +271,7 @@ final class Schema {
 			'discount_codes'    => "id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   code varchar(40) NOT NULL,
   woo_coupon_id bigint(20) unsigned NULL,
+  user_id bigint(20) unsigned NULL,
   kind varchar(20) NOT NULL,
   pct decimal(5,2) NULL,
   program_slugs longtext NULL,
@@ -287,7 +289,8 @@ final class Schema {
   revoke_reason text NULL,
   PRIMARY KEY  (id),
   UNIQUE KEY code (code),
-  KEY woo_coupon_id (woo_coupon_id)",
+  KEY woo_coupon_id (woo_coupon_id),
+  KEY user_id (user_id)",
 
 			'code_claims'       => "id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   user_id bigint(20) unsigned NULL,

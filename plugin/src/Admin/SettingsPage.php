@@ -54,7 +54,7 @@ final class SettingsPage {
 
 	public static function register(): void {
 		add_action( 'admin_menu', array( self::class, 'menu' ) );
-		foreach ( array( 'connection', 'legal', 'vat', 'sequence' ) as $section ) {
+		foreach ( array( 'connection', 'links', 'legal', 'vat', 'sequence' ) as $section ) {
 			add_action( 'admin_post_rungud_save_' . $section, array( self::class, 'save_' . $section ) );
 		}
 	}
@@ -79,6 +79,7 @@ final class SettingsPage {
 			echo '<div class="notice notice-error"><p>' . esc_html( $error ) . '</p></div>';
 		}
 		self::render_connection();
+		self::render_links();
 		self::render_legal();
 		self::render_vat();
 		self::render_sequence();
@@ -122,6 +123,23 @@ final class SettingsPage {
 		echo '</table>';
 		submit_button( 'Save connection' );
 		echo '</form>';
+	}
+
+	private static function render_links(): void {
+		echo '<h2>Website links</h2><p>Used in e-mails the back office sends.</p>';
+		self::form_open( 'links' );
+		echo '<table class="form-table"><tr><th><label for="pricing_url">Pricing page (membership plans)</label></th><td>';
+		echo '<input type="url" class="regular-text" id="pricing_url" name="pricing_url" value="' . esc_attr( (string) Settings::get( 'pricing_url', '' ) ) . '" placeholder="https://…">';
+		echo '<p class="description">The "Send checkout link" e-mail points here. Empty = the button is disabled.</p></td></tr></table>';
+		submit_button( 'Save links' );
+		echo '</form>';
+	}
+
+	public static function save_links(): void {
+		self::guard( 'links' );
+		$url = esc_url_raw( trim( (string) wp_unslash( $_POST['pricing_url'] ?? '' ) ) );
+		Settings::set( 'pricing_url', $url );
+		self::back( 'Links saved.' );
 	}
 
 	private static function render_legal(): void {

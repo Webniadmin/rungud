@@ -24,13 +24,16 @@ final class SiteApi {
 	 * @return array<mixed>
 	 * @throws SiteUnavailable when the route is missing or answers with an error
 	 */
-	public static function call( string $method, string $route, array $params = array(), string $capability = Capabilities::READ ): array {
+	public static function call( string $method, string $route, array $params = array(), string $capability = Capabilities::READ, ?string $idempotency_key = null ): array {
 		if ( ! current_user_can( $capability ) ) {
 			throw new SiteUnavailable( 'forbidden', 'The current user may not do this.' );
 		}
 		$request = new \WP_REST_Request( $method, '/inzentive/v1' . $route );
 		foreach ( $params as $k => $v ) {
 			$request->set_param( $k, $v );
+		}
+		if ( $idempotency_key ) {
+			$request->set_header( 'Idempotency-Key', $idempotency_key );
 		}
 		$grant = static fn() => $capability;
 		add_filter( 'inzentive/api/capability', $grant, PHP_INT_MAX );
@@ -49,6 +52,21 @@ final class SiteApi {
 			throw new SiteUnavailable( $code, $message, $response->get_status() );
 		}
 		return is_array( $data ) ? $data : array();
+	}
+
+	/** Whether the site registers a route (e.g. '/membership/cancel-now'), without calling it. */
+	public static function has_route( string $route ): bool {
+		$routes = rest_get_server()->get_routes( 'inzentive/v1' );
+		$full   = '/inzentive/v1' . $route;
+		if ( isset( $routes[ $full ] ) ) {
+			return true;
+		}
+		foreach ( array_keys( $routes ) as $pattern ) {
+			if ( preg_match( '@^' . $pattern . '$@i', $full ) ) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public static function available(): bool {

@@ -24,6 +24,7 @@ final class Routes {
 				OrdersController::register();
 				MembershipsController::register();
 				AuditController::register();
+				CommandsController::register();
 			}
 		);
 	}

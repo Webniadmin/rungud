@@ -10,6 +10,21 @@ final class SiteUnavailable extends \RuntimeException {
 		parent::__construct( $message ?: $reason );
 	}
 
+	/**
+	 * The site answered and said no (validation, conflict, unknown record) —
+	 * as opposed to not answering: server error, missing route, or a
+	 * permission problem between the CMS and the site (a setup fault).
+	 */
+	public function is_refusal(): bool {
+		if ( 'missing_route' === $this->reason || 'missing_function' === $this->reason ) {
+			return false;
+		}
+		if ( in_array( $this->status, array( 401, 403 ), true ) ) {
+			return false;
+		}
+		return $this->status >= 400 && $this->status < 500;
+	}
+
 	public function to_wp_error(): \WP_Error {
 		return new \WP_Error(
 			'rungud_site_unavailable',

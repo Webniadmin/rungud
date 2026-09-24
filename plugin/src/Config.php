@@ -22,6 +22,7 @@ final class Config {
 		'RUNGUD_SMTP_FROM_NAME',
 		'STRIPE_SECRET_KEY',
 		'STRIPE_WEBHOOK_SECRET',
+		'RUNGUD_MAIL_MODE',
 	);
 
 	/**
