@@ -67,10 +67,10 @@ final class Commands {
 		} catch ( SiteUnavailable $e ) {
 			$status = $e->is_refusal() ? Audit::REFUSED : Audit::FAILED;
 			$id     = Audit::record( $not_done( $row ) + array( 'status' => $status, 'error' => $e->getMessage() ) );
-			return self::error( $status, $e->getMessage(), $id );
+			return self::error( $status, $e->getMessage(), $id, $e->reason );
 		} catch ( Refused $e ) {
 			$id = Audit::record( $not_done( $row ) + array( 'status' => Audit::REFUSED, 'error' => $e->getMessage() ) );
-			return self::error( Audit::REFUSED, $e->getMessage(), $id );
+			return self::error( Audit::REFUSED, $e->getMessage(), $id, $e->reason );
 		} catch ( \Throwable $e ) {
 			$id = Audit::record( $not_done( $row ) + array( 'status' => Audit::FAILED, 'error' => $e->getMessage() ) );
 			return self::error( Audit::FAILED, $e->getMessage(), $id );
@@ -80,9 +80,9 @@ final class Commands {
 		return array( 'ok' => true, 'result' => $result, 'audit_id' => $id );
 	}
 
-	private static function error( string $status, string $message, int $audit_id ): \WP_Error {
+	private static function error( string $status, string $message, int $audit_id, ?string $reason = null ): \WP_Error {
 		return Audit::REFUSED === $status
-			? new \WP_Error( 'rungud_refused', $message, array( 'status' => 422, 'audit_id' => $audit_id ) )
-			: new \WP_Error( 'rungud_command_failed', $message, array( 'status' => 502, 'audit_id' => $audit_id ) );
+			? new \WP_Error( 'rungud_refused', $message, array( 'status' => 422, 'audit_id' => $audit_id, 'reason' => $reason ) )
+			: new \WP_Error( 'rungud_command_failed', $message, array( 'status' => 502, 'audit_id' => $audit_id, 'reason' => $reason ) );
 	}
 }

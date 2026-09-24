@@ -23,21 +23,21 @@ final class Documents {
 		if ( 'stripe_invoice' === $type ) {
 			$inv = StripeReader::invoice( $ref );
 			if ( empty( $inv['pdf'] ) ) {
-				throw new Refused( 'Stripe has no PDF for this invoice.' );
+				throw new Refused( 'Stripe has no PDF for this invoice.', 'no_pdf' );
 			}
 			return array( 'name' => ( $inv['number'] ?: $ref ) . '.pdf', 'data' => self::download( (string) $inv['pdf'] ) );
 		}
 		if ( 'woo_invoice' === $type ) {
 			// No WooCommerce PDF invoice plugin on the site yet (PROMPT §8 #1).
-			throw new Refused( 'There is no PDF for website orders yet — the PDF invoice plugin is not installed on the website.' );
+			throw new Refused( 'There is no PDF for website orders yet — the PDF invoice plugin is not installed on the website.', 'no_pdf_plugin' );
 		}
-		throw new Refused( 'Unknown document type.' );
+		throw new Refused( 'Unknown document type.', 'refused' );
 	}
 
 	private static function download( string $url ): string {
 		$host = (string) wp_parse_url( $url, PHP_URL_HOST );
 		if ( 'https' !== wp_parse_url( $url, PHP_URL_SCHEME ) || ! in_array( $host, self::ALLOWED_HOSTS, true ) ) {
-			throw new Refused( 'The document address is not a Stripe address.' );
+			throw new Refused( 'The document address is not a Stripe address.', 'no_pdf' );
 		}
 		$res = wp_safe_remote_get( $url, array( 'timeout' => 20, 'redirection' => 3 ) );
 		if ( is_wp_error( $res ) || 200 !== wp_remote_retrieve_response_code( $res ) ) {

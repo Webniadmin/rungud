@@ -2,8 +2,12 @@ import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { api } from '@/api/client'
-import type { Access, Documents, Licence, MembershipView, Order, Person as PersonData } from '@/api/types'
+import type { Documents, Licence, MembershipView, Order, Person as PersonData } from '@/api/types'
 import { Badge, DateText, Empty, ErrorNote, Loading, MembershipBadge, Money, OrderStatus, Tabs, Tip, type Tone } from '@/components/ui'
+import { useCan } from '@/auth/AuthProvider'
+import { AccessTab } from './person/Access'
+import { RefundDialog, SendDialog } from './person/DocumentActions'
+import { useState } from 'react'
 
 type Tab = 'overview' | 'access' | 'documents'
 
@@ -41,8 +45,8 @@ export default function Person() {
       />
       <div style={{ marginTop: 22 }}>
         {tab === 'overview' ? <Overview p={p} /> : null}
-        {tab === 'access' ? <AccessTab id={p.id} /> : null}
-        {tab === 'documents' ? <DocumentsTab id={p.id} /> : null}
+        {tab === 'access' ? <AccessTab id={p.id} name={p.name} email={p.email} /> : null}
+        {tab === 'documents' ? <DocumentsTab id={p.id} name={p.name} email={p.email} /> : null}
       </div>
     </div>
   )
@@ -150,59 +154,28 @@ function Overview({ p }: { p: PersonData }) {
   )
 }
 
-function AccessTab({ id }: { id: number }) {
+function DocumentsTab({ id, name, email }: { id: number; name: string; email: string }) {
   const { t } = useTranslation()
-  const q = useQuery({ queryKey: ['access', id], queryFn: () => api<Access>(`/people/${id}/access`) })
-  if (q.isLoading) return <Loading />
-  if (q.error || !q.data) return <ErrorNote error={q.error} />
-  const a = q.data
-  const courses = a.site.courses ?? []
-  return (
-    <>
-      <div className="note info">{t('person.accessInfo')}</div>
-      {!a.learndash ? <div className="note" style={{ marginTop: 12 }}>{t('person.noLearndash')}</div> : null}
-      <div className="grid2" style={{ marginTop: 20 }}>
-        <MembershipPanel m={a.membership} />
-        <Licences list={a.site.licences ?? []} />
-      </div>
-      <div className="sectitle">{t('person.whatTheySee')}</div>
-      <div className="panel">
-        {courses.length === 0 ? <div className="mut">{t('person.noCourses')}</div> : (
-          <table>
-            <tbody>
-              {courses.map((c) => (
-                <tr key={c.id}>
-                  <td>{c.title}</td>
-                  <td className="r num">{t('person.progress', { done: c.completed_steps, total: c.total_steps })}</td>
-                  <td className="r num">{c.percentage}%</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-        <div className="hint" style={{ marginTop: 12 }}>{t('person.readFromSite')}</div>
-      </div>
-    </>
-  )
-}
-
-function DocumentsTab({ id }: { id: number }) {
-  const { t } = useTranslation()
+  const can = useCan()
+  const [refund, setRefund] = useState<Order | null>(null)
+  const [send, setSend] = useState<{ type: 'stripe_invoice' | 'woo_invoice'; ref: string; label: string } | null>(null)
   const q = useQuery({ queryKey: ['documents', id], queryFn: () => api<Documents>(`/people/${id}/documents`) })
   if (q.isLoading) return <Loading />
   if (q.error || !q.data) return <ErrorNote error={q.error} />
   const d = q.data
-  const rows: { key: string; source: string; number: string; date: string | null; item: string; amount: string | null; currency: string; status: React.ReactNode; pdf: string | null }[] = [
-    ...d.woo.map((o: Order) => ({
+  type Row = { key: string; source: string; number: string; date: string | null; item: string; amount: string | null; currency: string; status: React.ReactNode; pdf: string | null; order?: Order; send?: { type: 'stripe_invoice' | 'woo_invoice'; ref: string; label: string } }
+  const rows: Row[] = [
+    ...d.woo.map((o: Order): Row => ({
       key: `w${o.id}`, source: 'WooCommerce', number: `#${o.number}`, date: o.date,
       item: o.items.map((i) => (i.quantity > 1 ? `${i.name} · ${i.quantity}×` : i.name)).join(', '),
-      amount: o.total, currency: o.currency, status: <OrderStatus status={o.status} />, pdf: o.invoice_pdf,
+      amount: o.total, currency: o.currency, status: <OrderStatus status={o.status} />, pdf: o.invoice_pdf, order: o,
+      send: o.invoice_pdf ? { type: 'woo_invoice', ref: String(o.id), label: `#${o.number}` } : undefined,
     })),
-    ...d.stripe.map((s) => ({
+    ...d.stripe.map((s): Row => ({
       key: `s${s.id}`, source: 'Stripe', number: s.number ?? s.id, date: s.date, item: t('person.membershipInvoice'),
       amount: s.amount, currency: s.currency,
       status: <Badge tone={s.status === 'paid' ? 'ok' : s.status === 'open' ? 'warn' : 'neu'}>{t(`stripeStatus.${s.status}`, { defaultValue: s.status })}</Badge>,
-      pdf: s.pdf,
+      pdf: s.pdf, send: s.pdf ? { type: 'stripe_invoice', ref: s.id, label: s.number ?? s.id } : undefined,
     })),
   ].sort((a, b) => String(b.date).localeCompare(String(a.date)))
 
@@ -221,7 +194,7 @@ function DocumentsTab({ id }: { id: number }) {
                 <th>{t('person.item')}</th>
                 <th className="r">{t('common.amount')}</th>
                 <th>{t('person.status')}</th>
-                <th>PDF</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -231,15 +204,26 @@ function DocumentsTab({ id }: { id: number }) {
                   <td className="nm num">{r.number}</td>
                   <td><DateText value={r.date} /></td>
                   <td>{r.item}</td>
-                  <td className="r"><Money amount={r.amount} currency={r.currency} /></td>
+                  <td className="r">
+                    <Money amount={r.amount} currency={r.currency} />
+                    {r.order?.refunded && r.order.refunded !== '0.00' ? <div className="mut">{t('invoices.refunded')} <Money amount={r.order.refunded} currency={r.currency} /></div> : null}
+                  </td>
                   <td>{r.status}</td>
-                  <td>{r.pdf ? <a className="btn sm" href={r.pdf} target="_blank" rel="noreferrer">PDF</a> : <span className="mut">{t('person.pdfNotAvailable')}</span>}</td>
+                  <td className="r">
+                    <div className="btnrow" style={{ justifyContent: 'flex-end', flexWrap: 'nowrap' }}>
+                      {r.pdf ? <a className="btn sm" href={r.pdf} target="_blank" rel="noreferrer">PDF</a> : <span className="mut" style={{ alignSelf: 'center' }}>{t('person.pdfNotAvailable')}</span>}
+                      {can('send') && r.send ? <button type="button" className="btn sm" onClick={() => setSend(r.send!)}>{t('send.button')}</button> : null}
+                      {can('finance') && r.order && Number(r.order.refund.remaining) > 0 && r.order.paid ? <button type="button" className="btn sm" onClick={() => setRefund(r.order!)}>{t('refund.button')}</button> : null}
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       )}
+      {refund ? <RefundDialog order={refund} onClose={() => setRefund(null)} /> : null}
+      {send ? <SendDialog docType={send.type} docRef={send.ref} label={send.label} defaultTo={email} name={name} onClose={() => setSend(null)} /> : null}
     </>
   )
 }

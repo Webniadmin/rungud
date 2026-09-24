@@ -260,7 +260,7 @@ final class Handlers {
 		$user = get_userdata( (int) $p['user_id'] );
 		$url  = (string) Settings::get( 'pricing_url', '' );
 		if ( ! $user || '' === $url ) {
-			return new \WP_Error( 'rungud_no_pricing_url', 'The pricing page address is not set (Settings → rungud).', array( 'status' => 409 ) );
+			return new \WP_Error( 'rungud_no_pricing_url', 'The pricing page address is not set (Settings → rungud).', array( 'status' => 409, 'reason' => 'pricing_url_missing' ) );
 		}
 		$who = self::person( $user->ID );
 		return Commands::run(

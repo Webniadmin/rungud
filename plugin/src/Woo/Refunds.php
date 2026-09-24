@@ -38,10 +38,10 @@ final class Refunds {
 		$remaining = (float) $order->get_remaining_refund_amount();
 		$value     = round( (float) $amount, 2 );
 		if ( $value <= 0 ) {
-			throw new Refused( 'The refund amount must be more than zero.' );
+			throw new Refused( 'The refund amount must be more than zero.', 'amount_invalid' );
 		}
 		if ( $value > round( $remaining, 2 ) + 0.001 ) {
-			throw new Refused( 'The refund is larger than what is left to refund on this order (' . Money::dec( $remaining ) . ').' );
+			throw new Refused( 'The refund is larger than what is left to refund on this order (' . Money::dec( $remaining ) . ').', 'refund_too_large' );
 		}
 		$automatic = self::automatic( $order );
 		$refund    = wc_create_refund(

@@ -219,7 +219,7 @@ final class CommandsController {
 		$number = strtoupper( trim( (string) $r['number'] ) );
 		$until  = self::date_or_null( $r['valid_until'] );
 		if ( '' === $number ) {
-			return self::invalid( 'A licence needs a number.' );
+			return self::invalid( 'A licence needs a number.', 'number_required' );
 		}
 		if ( is_wp_error( $until ) ) {
 			return $until;
@@ -238,7 +238,7 @@ final class CommandsController {
 		$verdict = (string) $r['verdict'];
 		$reason  = sanitize_textarea_field( (string) $r['reason'] );
 		if ( 'verify' !== $verdict && '' === trim( $reason ) ) {
-			return self::invalid( 'Give a reason — the person reads it on the website.' );
+			return self::invalid( 'Give a reason — the person reads it on the website.', 'reason_required' );
 		}
 		$until = self::date_or_null( $r['valid_until'] );
 		if ( is_wp_error( $until ) ) {
@@ -255,14 +255,14 @@ final class CommandsController {
 		}
 		$until = self::date_or_null( $r['expires_at'] );
 		if ( is_wp_error( $until ) || null === $until ) {
-			return self::invalid( 'Choose the last day of free access.' );
+			return self::invalid( 'Choose the last day of free access.', 'date_invalid' );
 		}
 		if ( $until <= wp_date( 'Y-m-d' ) ) {
-			return self::invalid( 'The last day must be after today.' );
+			return self::invalid( 'The last day must be after today.', 'date_past' );
 		}
 		$reason = sanitize_textarea_field( (string) $r['reason'] );
 		if ( '' === trim( $reason ) ) {
-			return self::invalid( 'Give a reason.' );
+			return self::invalid( 'Give a reason.', 'reason_required' );
 		}
 		return self::out( Handlers::dispatch( 'access_grant', array(
 			'user_id' => (int) $r['id'], 'scope' => (string) $r['scope'], 'expires_at' => $until, 'reason' => $reason,
@@ -303,7 +303,7 @@ final class CommandsController {
 			unset( $e );
 		}
 		if ( $professional && ! $plan['professional'] ) {
-			return self::invalid( 'This is a professional account; the website only sells it an instructor plan.' );
+			return self::invalid( 'This is a professional account; the website only sells it an instructor plan.', 'plan_professional' );
 		}
 		return self::out( Handlers::dispatch( 'checkout_link', array(
 			'user_id' => $user->ID, 'plan' => $plan['slug'], 'plan_title' => $plan['title'], 'lang' => (string) $r['lang'],
@@ -338,7 +338,7 @@ final class CommandsController {
 		}
 		$reason = sanitize_textarea_field( (string) $r['reason'] );
 		if ( '' === trim( $reason ) ) {
-			return self::invalid( 'Give a reason for the refund.' );
+			return self::invalid( 'Give a reason for the refund.', 'reason_required' );
 		}
 		return self::out( Handlers::dispatch( 'woo_refund', array( 'order_id' => (int) $r['id'], 'amount' => $amount, 'reason' => $reason ), (string) $r['request_id'] ) );
 	}
@@ -346,7 +346,7 @@ final class CommandsController {
 	public static function send( \WP_REST_Request $r ) {
 		$to = sanitize_email( (string) $r['to'] );
 		if ( ! is_email( $to ) ) {
-			return self::invalid( 'Enter a valid e-mail address.' );
+			return self::invalid( 'Enter a valid e-mail address.', 'email_invalid' );
 		}
 		return self::out( Handlers::dispatch( 'document_send', array(
 			'doc_type' => (string) $r['doc_type'], 'doc_ref' => sanitize_text_field( (string) $r['doc_ref'] ),
@@ -376,8 +376,8 @@ final class CommandsController {
 		return new \WP_Error( 'rungud_not_found', 'This person does not exist.', array( 'status' => 404 ) );
 	}
 
-	private static function invalid( string $message ): \WP_Error {
-		return new \WP_Error( 'rungud_invalid', $message, array( 'status' => 400 ) );
+	private static function invalid( string $message, string $reason = 'invalid' ): \WP_Error {
+		return new \WP_Error( 'rungud_invalid', $message, array( 'status' => 400, 'reason' => $reason ) );
 	}
 
 	/** @return string|null|\WP_Error Y-m-d */
@@ -386,7 +386,7 @@ final class CommandsController {
 			return null;
 		}
 		if ( ! is_string( $value ) || ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $value ) || ! checkdate( (int) substr( $value, 5, 2 ), (int) substr( $value, 8, 2 ), (int) substr( $value, 0, 4 ) ) ) {
-			return self::invalid( 'Not a valid date.' );
+			return self::invalid( 'Not a valid date.', 'date_invalid' );
 		}
 		return $value;
 	}
@@ -395,7 +395,7 @@ final class CommandsController {
 	private static function amount( mixed $value ) {
 		$s = str_replace( ',', '.', trim( (string) $value ) );
 		if ( ! preg_match( '/^\d{1,7}(\.\d{1,2})?$/', $s ) || (float) $s <= 0 ) {
-			return self::invalid( 'Enter an amount above zero, e.g. 120.00.' );
+			return self::invalid( 'Enter an amount above zero, e.g. 120.00.', 'amount_invalid' );
 		}
 		return Money::dec( $s );
 	}
@@ -411,6 +411,6 @@ final class CommandsController {
 		} catch ( SiteUnavailable $e ) {
 			return $e->to_wp_error();
 		}
-		return self::invalid( 'Unknown plan.' );
+		return self::invalid( 'Unknown plan.', 'plan_unknown' );
 	}
 }

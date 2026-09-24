@@ -28,17 +28,17 @@ final class Attendees {
 	public static function validate( \WC_Order_Item_Product $item, mixed $input ): array {
 		$quantity = (int) $item->get_quantity();
 		if ( ! is_array( $input ) || count( $input ) !== $quantity ) {
-			throw new Refused( "This line has {$quantity} places; enter {$quantity} names." );
+			throw new Refused( "This line has {$quantity} places; enter {$quantity} names.", 'attendees_count' );
 		}
 		$out = array();
 		foreach ( array_values( $input ) as $i => $a ) {
 			$name  = trim( sanitize_text_field( (string) ( $a['name'] ?? '' ) ) );
 			$email = trim( sanitize_email( (string) ( $a['email'] ?? '' ) ) );
 			if ( '' === $name ) {
-				throw new Refused( 'Place ' . ( $i + 1 ) . ' has no name.' );
+				throw new Refused( 'Place ' . ( $i + 1 ) . ' has no name.', 'attendees_name' );
 			}
 			if ( '' !== (string) ( $a['email'] ?? '' ) && ! is_email( $email ) ) {
-				throw new Refused( 'Place ' . ( $i + 1 ) . ': the e-mail address is not valid.' );
+				throw new Refused( 'Place ' . ( $i + 1 ) . ': the e-mail address is not valid.', 'attendees_email' );
 			}
 			$out[] = array( 'name' => mb_substr( $name, 0, 190 ), 'email' => $email );
 		}

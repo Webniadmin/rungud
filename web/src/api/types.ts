@@ -37,6 +37,7 @@ export interface OrderItem {
   total: string | null
   product_id: number
   event_id: number | null
+  attendees: Attendee[]
 }
 
 export interface Order {
@@ -51,6 +52,7 @@ export interface Order {
   refunded: string | null
   currency: string
   invoice_pdf: string | null
+  refund: { remaining: string; gateway: string; automatic: boolean }
   refunds?: { id: number; date: string | null; amount: string | null; reason: string }[]
 }
 
@@ -159,6 +161,8 @@ export interface Participant {
   paid: boolean
   date: string | null
   user_id: number | null
+  item_id: number | null
+  attendees: Attendee[]
   membership: MembershipStatus
   health_declaration: null | 'submitted' | 'missing'
   certificate: null | string
@@ -172,12 +176,13 @@ export interface AuditRow {
   entity: string
   entity_id: string
   action: string
-  status: 'ok' | 'failed'
+  status: 'ok' | 'failed' | 'refused'
   error: string | null
   summary_en: string
   summary_de: string
   retry_of: number | null
   open?: boolean
+  retryable?: boolean
 }
 
 export interface EventDetail {
@@ -218,4 +223,48 @@ export interface Today {
   role: 'owner' | 'backoffice' | 'admin'
   items: TodayItem[]
   not_yet_available: string[]
+}
+
+export interface SiteCapabilities {
+  membership: Record<'cancel-at-period-end' | 'cancel-now' | 'refund-cancel', boolean>
+  licences: boolean
+  grant: boolean
+  woo_pdf: boolean
+  stripe: boolean
+  mail_mode: 'send' | 'log'
+  pricing_url: boolean
+}
+
+export interface Programme {
+  slug: string
+  title: string
+  audience: 'b2c' | 'b2b'
+  takes_licence: boolean
+  licence_prefix: string | null
+  next_number: string | null
+}
+
+export interface Plan {
+  slug: string
+  title: string
+  audience: 'b2c' | 'b2b'
+  professional: boolean
+  price: string | null
+  currency: string
+}
+
+export interface RedeemCode {
+  code: string
+  days: number | null
+  scope: string | null
+  made_at: string
+  note: string
+  used: boolean
+  valid_until: string | null
+  state: 'open' | 'used' | 'expired' | 'deleted'
+}
+
+export interface Attendee {
+  name: string
+  email: string
 }

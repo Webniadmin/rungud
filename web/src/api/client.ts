@@ -9,10 +9,13 @@
 export class ApiError extends Error {
   readonly status: number
   readonly code: string
-  constructor(status: number, code: string, message: string) {
+  /** Translatable reason key from the plugin (reasons.* in the dictionaries) or the site's error code. */
+  readonly reason: string | null
+  constructor(status: number, code: string, message: string, reason: string | null = null) {
     super(message)
     this.status = status
     this.code = code
+    this.reason = reason
   }
 }
 
@@ -83,8 +86,8 @@ async function raw(path: string, init: RequestInit = {}, token: string | null = 
 }
 
 function toError(status: number, body: unknown): ApiError {
-  const b = (body ?? {}) as { code?: string; message?: string }
-  return new ApiError(status, b.code ?? 'unknown', b.message ?? `HTTP ${status}`)
+  const b = (body ?? {}) as { code?: string; message?: string; data?: { reason?: string | null } }
+  return new ApiError(status, b.code ?? 'unknown', b.message ?? `HTTP ${status}`, b.data?.reason ?? null)
 }
 
 function accept(data: TokenResponse): Me {

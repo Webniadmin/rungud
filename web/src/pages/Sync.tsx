@@ -1,4 +1,8 @@
+import { useState } from 'react'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { useCommand, useErrorText, useRequestId } from '@/api/commands'
+import { useCan } from '@/auth/AuthProvider'
+import { Dialog } from '@/components/Dialog'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 import { api, qs } from '@/api/client'
@@ -9,8 +13,29 @@ import { formatDateTime } from '@/lib/format'
 
 type Tab = 'log' | 'owners'
 
+function RetryDialog({ row, onClose }: { row: AuditRow; onClose: () => void }) {
+  const { t, i18n } = useTranslation()
+  const err = useErrorText()
+  const rid = useRequestId()
+  const cmd = useCommand([['audit'], ['today']])
+  const summary = (i18n.language === 'de' ? row.summary_de : row.summary_en).replace(/^(Not done|Nicht ausgeführt): /, '')
+  return (
+    <Dialog
+      title={t('sync.retryTitle')}
+      confirmLabel={t('sync.retry')}
+      busy={cmd.isPending}
+      error={cmd.error ? err(cmd.error) : null}
+      onClose={onClose}
+      onConfirm={() => cmd.mutate({ path: `/audit/${row.id}/retry`, body: { request_id: rid.id } }, { onSuccess: onClose, onError: rid.renew })}
+      consequence={t('sync.retryConsequence', { summary })}
+    />
+  )
+}
+
 export function AuditList({ rows, empty }: { rows: AuditRow[]; empty: string }) {
   const { t, i18n } = useTranslation()
+  const can = useCan()
+  const [retry, setRetry] = useState<AuditRow | null>(null)
   if (rows.length === 0) return <Empty>{empty}</Empty>
   return (
     <div className="tablewrap panel" style={{ padding: 0 }}>
@@ -33,12 +58,14 @@ export function AuditList({ rows, empty }: { rows: AuditRow[]; empty: string }) 
                 {r.error ? <div className="mut">{r.error}</div> : null}
               </td>
               <td>
-                {r.status === 'ok' ? <Badge tone="ok">{t('sync.ok')}</Badge> : r.open ? <Badge tone="bad">{t('sync.failed')}</Badge> : <Badge tone="neu">{t('sync.failedRetried')}</Badge>}
+                {r.status === 'ok' ? <Badge tone="ok">{t('sync.ok')}</Badge> : r.status === 'refused' ? <Badge tone="warn">{t('sync.refused')}</Badge> : r.open ? <Badge tone="bad">{t('sync.failed')}</Badge> : <Badge tone="neu">{t('sync.failedRetried')}</Badge>}
+                {r.open && r.retryable && can('write') ? <div style={{ marginTop: 6 }}><button type="button" className="btn sm primary" onClick={() => setRetry(r)}>{t('sync.retry')}</button></div> : null}
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+      {retry ? <RetryDialog row={retry} onClose={() => setRetry(null)} /> : null}
     </div>
   )
 }

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
@@ -7,6 +8,9 @@ import { DateText, Empty, ErrorNote, Loading, MembershipBadge, Money, OrderStatu
 import { formatDate, formatMoney } from '@/lib/format'
 import { downloadCsv } from '@/lib/csv'
 import { AuditList } from './Sync'
+import { AttendeesDialog } from '@/components/AttendeesDialog'
+import { useCan } from '@/auth/AuthProvider'
+import type { Participant } from '@/api/types'
 import { BookingBadge, DateRange } from '@/components/EventBits'
 
 type Tab = 'overview' | 'participants' | 'waiting' | 'history'
@@ -17,6 +21,8 @@ export default function Event() {
   const [params, setParams] = useSearchParams()
   const tab = (params.get('tab') as Tab) || 'participants'
   const q = useQuery({ queryKey: ['event', id], queryFn: () => api<EventDetail>(`/events/${id}`) })
+  const can = useCan()
+  const [names, setNames] = useState<Participant | null>(null)
 
   if (q.isLoading) return <div className="page"><Loading /></div>
   if (q.error || !q.data) return <div className="page"><ErrorNote error={q.error} /></div>
@@ -96,7 +102,7 @@ export default function Event() {
                 <button type="button" className="btn sm" onClick={() => window.print()}>{t('common.print')}</button>
               </div>
             </div>
-            <div className="note info" style={{ marginBottom: 14 }}>{t('event.perOrderNote')}</div>
+            <div className="note info" style={{ marginBottom: 14 }}>{t('event.perOrderNote3')}</div>
             {q.data.participants_error ? <div className="note bad">{t('event.participantsError')}</div> : null}
             {participants.length === 0 ? <Empty>{t('event.noParticipants')}</Empty> : (
               <div className="tablewrap panel" style={{ padding: 0 }}>
@@ -121,7 +127,20 @@ export default function Event() {
                           <div className="nm">{p.user_id ? <Link className="plain" to={`/people/${p.user_id}`}>{p.name}</Link> : p.name}</div>
                           <div className="mut">{p.email}</div>
                         </td>
-                        <td className="bill">{p.company ?? p.name}<div className="mut num">#{p.order_number}</div></td>
+                        <td className="bill">
+                          {p.company ?? p.name}
+                          <div className="mut num">#{p.order_number}</div>
+                          {p.attendees.length > 0 ? (
+                            <ol className="mut" style={{ margin: '6px 0 0', paddingLeft: 18 }}>
+                              {p.attendees.map((a, i) => <li key={i}>{a.name}{a.email ? ` · ${a.email}` : ''}</li>)}
+                            </ol>
+                          ) : null}
+                          {can('write') && p.item_id && p.quantity > 1 ? (
+                            <button type="button" className="btn sm" style={{ marginTop: 6 }} onClick={() => setNames(p)}>
+                              {p.attendees.length ? t('attendees.edit') : t('attendees.add', { count: p.quantity })}
+                            </button>
+                          ) : null}
+                        </td>
                         <td><DateText value={p.date} /></td>
                         <td><MembershipBadge status={p.membership} /></td>
                         <td className="r num">{p.quantity}</td>
@@ -149,6 +168,9 @@ export default function Event() {
         ) : null}
 
         {tab === 'history' ? <AuditList rows={history} empty={t('event.noHistory')} /> : null}
+        {names && names.item_id ? (
+          <AttendeesDialog orderId={names.order_id} orderNumber={names.order_number} itemId={names.item_id} quantity={names.quantity} current={names.attendees} onClose={() => setNames(null)} invalidate={[['event', id]]} />
+        ) : null}
       </div>
     </div>
   )

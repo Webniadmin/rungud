@@ -6,6 +6,8 @@ import { api } from '@/api/client'
 import type { Today } from '@/api/types'
 import { useAuth } from '@/auth/AuthProvider'
 import { Icon } from './Icon'
+import { ToastProvider } from './Toast'
+import { useErrorText } from '@/api/commands'
 import type { IconName } from './icons'
 
 type NavItem = [path: string, icon: IconName, labelKey: string, count?: number]
@@ -102,7 +104,9 @@ function Top() {
 }
 
 export function Shell({ children }: { children: ReactNode }) {
+  const errorText = useErrorText()
   return (
+    <ToastProvider errorText={errorText}>
     <div className="app">
       <Rail />
       <div className="main">
@@ -110,5 +114,6 @@ export function Shell({ children }: { children: ReactNode }) {
         {children}
       </div>
     </div>
+    </ToastProvider>
   )
 }
