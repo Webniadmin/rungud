@@ -19,6 +19,11 @@ final class Routes {
 			static function () {
 				AuthController::register();
 				TodayController::register();
+				PeopleController::register();
+				EventsController::register();
+				OrdersController::register();
+				MembershipsController::register();
+				AuditController::register();
 			}
 		);
 	}

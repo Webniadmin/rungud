@@ -117,6 +117,58 @@ final class Audit {
 		); // phpcs:ignore WordPress.DB.PreparedSQL
 	}
 
+	/** @return list<array<string,mixed>> newest first */
+	public static function for_entity( string $entity, string $entity_id, int $limit = 100 ): array {
+		global $wpdb;
+		$t = Schema::table( 'audit' );
+		$rows = $wpdb->get_results(
+			$wpdb->prepare( "SELECT * FROM {$t} WHERE entity = %s AND entity_id = %s ORDER BY id DESC LIMIT %d", $entity, $entity_id, $limit ), // phpcs:ignore WordPress.DB.PreparedSQL
+			ARRAY_A
+		);
+		return array_map( array( self::class, 'shape' ), (array) $rows );
+	}
+
+	/**
+	 * @param list<string> $exclude_entities
+	 * @return array{items:list<array<string,mixed>>, total:int, page:int, pages:int}
+	 */
+	public static function page( int $page, int $per_page, ?string $status = null, array $exclude_entities = array() ): array {
+		global $wpdb;
+		$t     = Schema::table( 'audit' );
+		$conds = array();
+		if ( $status ) {
+			$conds[] = $wpdb->prepare( 'status = %s', $status );
+		}
+		foreach ( $exclude_entities as $entity ) {
+			$conds[] = $wpdb->prepare( 'entity <> %s', $entity );
+		}
+		$where = $conds ? 'WHERE ' . implode( ' AND ', $conds ) : '';
+		$total = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$t} {$where}" ); // phpcs:ignore WordPress.DB.PreparedSQL
+		$rows  = $wpdb->get_results(
+			$wpdb->prepare( "SELECT * FROM {$t} {$where} ORDER BY id DESC LIMIT %d OFFSET %d", $per_page, ( max( 1, $page ) - 1 ) * $per_page ), // phpcs:ignore WordPress.DB.PreparedSQL
+			ARRAY_A
+		);
+		$items = array_map( array( self::class, 'shape' ), (array) $rows );
+		// A failure is "open" until a successful retry points at it.
+		$resolved = array();
+		$ids      = array_column( array_filter( $items, static fn( $r ) => self::FAILED === $r['status'] ), 'id' );
+		if ( $ids ) {
+			$in       = implode( ',', array_map( 'intval', $ids ) );
+			$resolved = array_map( 'intval', (array) $wpdb->get_col( "SELECT DISTINCT retry_of FROM {$t} WHERE status = 'ok' AND retry_of IN ({$in})" ) ); // phpcs:ignore WordPress.DB.PreparedSQL
+		}
+		foreach ( $items as &$item ) {
+			$item['open'] = self::FAILED === $item['status'] && null === $item['retry_of'] && ! in_array( $item['id'], $resolved, true );
+		}
+		unset( $item );
+		return array( 'items' => $items, 'total' => $total, 'page' => $page, 'pages' => (int) max( 1, ceil( $total / $per_page ) ) );
+	}
+
+	public static function count_since( string $gmt ): int {
+		global $wpdb;
+		$t = Schema::table( 'audit' );
+		return (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$t} WHERE created_at >= %s", $gmt ) ); // phpcs:ignore WordPress.DB.PreparedSQL
+	}
+
 	/** @param array<string,mixed> $row */
 	private static function shape( array $row ): array {
 		$row['id']       = (int) $row['id'];

@@ -15,7 +15,7 @@ abstract class LocalSiteTestCase extends TestCase {
 
 	public function set_up(): void {
 		parent::set_up();
-		if ( ! defined( 'LEARNDASH_VERSION' ) ) {
+		if ( defined( 'RUNGUD_SITE_DOUBLE' ) || ! defined( 'LEARNDASH_VERSION' ) ) {
 			$this->markTestSkipped( 'LearnDash is not installed — local-site tests need the site team\'s copy.' );
 		}
 	}

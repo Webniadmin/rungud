@@ -13,6 +13,9 @@ abstract class TestCase extends \WP_UnitTestCase {
 		Guard::reset();
 		\Rungud\Settings::flush();
 		unset( $_SERVER['HTTP_AUTHORIZATION'], $_SERVER['REQUEST_URI'] );
+		if ( class_exists( \Rungud\Tests\Fixtures\SiteStore::class ) ) {
+			\Rungud\Tests\Fixtures\SiteStore::reset();
+		}
 	}
 
 	protected function make_user( string $role, string $password = 'correct horse battery' ): \WP_User {

@@ -25,11 +25,20 @@ tests_add_filter(
 		foreach ( array_filter( explode( ',', (string) getenv( 'RUNGUD_TEST_SITE_PLUGINS' ) ) ) as $extra ) {
 			require_once $plugins . '/' . trim( $extra );
 		}
+		// CI: no site theme — use the double of App\ and inzentive/v1.
+		if ( ! function_exists( 'App\\api_can' ) ) {
+			require_once __DIR__ . '/fixtures/site-double.php';
+		}
 		require_once dirname( __DIR__, 2 ) . '/rungud-cms.php';
 	}
 );
 
 require $tests_dir . '/includes/bootstrap.php';
+
+// WooCommerce tables (orders are created in tests through Woo's own API).
+if ( class_exists( 'WC_Install' ) ) {
+	WC_Install::install();
+}
 
 // Real tables for the test run (inside test methods WP turns CREATE TABLE into temporary tables).
 Rungud\Plugin::activate();
