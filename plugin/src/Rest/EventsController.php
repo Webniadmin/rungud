@@ -80,7 +80,7 @@ final class EventsController {
 		$participants_error = null;
 		try {
 			foreach ( Site::event_orders( $id ) as $row ) {
-				$participants[] = self::participant( (array) $row );
+				$participants[] = self::participant( (array) $row, $id );
 			}
 		} catch ( SiteUnavailable $e ) {
 			$participants_error = $e->getMessage();
@@ -123,10 +123,23 @@ final class EventsController {
 		);
 	}
 
-	/** @param array<string,mixed> $row App\event_attendees() row @return array<string,mixed> */
-	private static function participant( array $row ): array {
+	/**
+	 * @param array<string,mixed> $row App\event_attendees() row
+	 * @return array<string,mixed>
+	 */
+	private static function participant( array $row, int $event_id ): array {
 		$order   = function_exists( 'wc_get_order' ) ? wc_get_order( (int) $row['order_id'] ) : null;
 		$user_id = $order ? (int) $order->get_customer_id() : 0;
+		// The site's row carries the line total without VAT; everywhere else the CMS shows what the
+		// customer paid. Take the stored gross of this event's line(s) so both screens agree.
+		$gross = null;
+		if ( $order ) {
+			foreach ( $order->get_items() as $item ) {
+				if ( (int) $item->get_meta( '_inzentive_event_id' ) === $event_id ) {
+					$gross = ( $gross ?? 0.0 ) + (float) $item->get_total() + (float) $item->get_total_tax();
+				}
+			}
+		}
 		$user    = $user_id ? get_userdata( $user_id ) : null;
 		return array(
 			'order_id'     => (int) $row['order_id'],
@@ -135,7 +148,7 @@ final class EventsController {
 			'company'      => $order ? ( $order->get_billing_company() ?: null ) : null,
 			'email'        => (string) ( $row['email'] ?? '' ),
 			'quantity'     => (int) ( $row['quantity'] ?? 1 ),
-			'total'        => Money::dec( $row['total'] ?? null ),
+			'total'        => Money::dec( $gross ?? ( $row['total'] ?? null ) ),
 			'currency'     => $order ? $order->get_currency() : null,
 			'order_status' => (string) ( $row['status'] ?? '' ),
 			'paid'         => (bool) ( $row['paid'] ?? false ),

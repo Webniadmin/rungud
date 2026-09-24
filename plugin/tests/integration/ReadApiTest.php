@@ -172,6 +172,29 @@ final class ReadApiTest extends TestCase {
 		$this->assertSame( '2026-07-02', $p['date'] );
 	}
 
+	public function test_participant_amount_is_the_gross_line_like_everywhere_else(): void {
+		$order = wc_create_order();
+		$item  = new \WC_Order_Item_Product();
+		$item->set_name( 'Zen Flow Retreat, Lake Bled' );
+		$item->set_quantity( 4 );
+		$item->set_subtotal( '3330.25' );
+		$item->set_total( '3330.25' );
+		$item->set_total_tax( '269.75' );
+		$item->add_meta_data( '_inzentive_event_id', 21 );
+		$order->add_item( $item );
+		$order->set_currency( 'EUR' );
+		$order->save();
+		SiteStore::$events    = array( array( 'id' => 21, 'slug' => 'zen', 'title' => 'Zen Flow Retreat', 'start' => '2030-11-23', 'end' => '2030-11-27' ) );
+		// The site's own row carries the net line total.
+		SiteStore::$attendees = array( 21 => array( array( 'order_id' => $order->get_id(), 'order_number' => (string) $order->get_id(), 'name' => 'Petra Schmidt', 'email' => 'p@x', 'quantity' => 4, 'total' => 3330.25, 'status' => 'processing', 'paid' => true, 'date' => '2026-09-24 12:00' ) ) );
+
+		wp_set_current_user( $this->gudrun->ID );
+		$p = $this->call( 'GET', '/events/21' )->get_data()['participants'][0];
+		$this->assertSame( '3600.00', $p['total'] );
+		$order_view = $this->call( 'GET', '/orders/' . $order->get_id() )->get_data();
+		$this->assertSame( '3600.00', $order_view['items'][0]['total'] );
+	}
+
 	public function test_unknown_event_is_404(): void {
 		wp_set_current_user( $this->gudrun->ID );
 		$this->assertError( $this->call( 'GET', '/events/999' ), 404, 'rungud_not_found' );
