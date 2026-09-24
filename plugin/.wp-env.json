@@ -1,8 +1,8 @@
 {
-    "core": "https://wordpress.org/wordpress-6.8.zip",
+    "core": "https://wordpress.org/wordpress-6.9.zip",
     "phpVersion": "8.1",
     "plugins": [
-        "https://downloads.wordpress.org/plugin/woocommerce.latest-stable.zip"
+        "https://downloads.wordpress.org/plugin/woocommerce.11.0.1.zip"
     ],
     "mappings": {
         "wp-content/plugins/rungud-cms": "."
