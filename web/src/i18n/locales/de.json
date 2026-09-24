@@ -102,7 +102,9 @@
     "price": "Preis",
     "factSheet": "Factsheet",
     "cancelTerms": "Stornierungsbedingungen",
-    "dateAndTime": "Zeit und Ort"
+    "dateAndTime": "Zeit und Ort",
+    "language": "Sprache",
+    "pageOf": "Seite {{page}} von {{pages}}"
   },
   "nav": {
     "operations": "Betrieb",
@@ -158,5 +160,383 @@
     "approve_invoice": "Rechnung freigeben",
     "record_payment": "Zahlung erfassen",
     "send_reminder": "Mahnung senden"
+  },
+  "tips": {
+    "draft": "Vom System aus der Anmeldung vorbereitet. Noch ohne Rechnungsnummer, und niemand außerhalb hat sie gesehen.",
+    "pending": "Wartet auf dich. Mit der Freigabe wird die Nummer vergeben, das PDF geschrieben, und danach ist keine Änderung mehr möglich.",
+    "sent": "Freigegeben und per E-Mail versendet, mit Factsheet im Anhang. Korrekturen nur über eine Gutschrift.",
+    "overdue": "Das Fälligkeitsdatum ist vorbei und das Geld ist nicht da. Eine Mahnung kannst du unter Zahlungen senden.",
+    "classroom": "Ob diese Person eine aktive Classroom-Mitgliedschaft hatte. Aktiv bedeutet 30 % Rabatt auf den Kurspreis.",
+    "snapshot": "Der Rabatt wird am Tag der Anmeldung entschieden und nie neu berechnet. Läuft die Mitgliedschaft später ab, bleibt der bereits gewährte Preis.",
+    "grouped": "Mehrere Teilnehmer:innen auf einer Rechnung für dieselbe Firma. Jede Zeile behält den eigenen Rabatt der Person.",
+    "prereq": "Ob die verlangte frühere Ausbildung hinterlegt ist. Eine fehlende blockiert nie — sie wird nur angezeigt.",
+    "waitlist": "Wenn die Veranstaltung voll ist, kommen Anmeldungen weiter an und landen hier der Reihe nach. Niemand rückt automatisch nach — du bestätigst es.",
+    "licence": "Gehört zur Person und ändert sich nie, auch wenn das Zertifikat neu ausgestellt wird. Diese Nummer veröffentlicht ein Coach.",
+    "certno": "Gehört zum Dokument. Eine Neuausstellung nach Namensänderung erzeugt eine neue Zertifikatsnummer, die Lizenznummer bleibt.",
+    "codes": "Ein Code ist selbst der Beleg: du hast ihn, weil du dort warst oder weil Robert ihn dir geschickt hat. Eine Auswahlliste wäre eine Selbstauskunft, die das System nicht prüfen kann.",
+    "stack": "Standardmäßig gilt der bessere der beiden Rabatte, nicht beide. Ein Mitglied mit 30 % bekommt mit einem 10 %-Code weiterhin 30 %. Robert kann das Kombinieren pro Code erlauben.",
+    "claim": "Für Zusagen, die vor den Codes gemacht wurden. Es wird nichts automatisch angewendet — es landet bei Gudrun als Prüfaufgabe.",
+    "personal": "Von Robert am Handy erstellt, in dem Moment, in dem er jemandem einen Rabatt zusagt. Einmal einlösbar, per WhatsApp aus dem System gesendet. Der Code trägt die Identität, niemand muss später Namen abgleichen.",
+    "ownership": "Jeder Datensatz hat genau einen Besitzer. Wenn etwas falsch aussieht, korrigiere es dort, wo es lebt — die andere Seite folgt innerhalb einer Minute. Eine Kopie zu korrigieren wird beim nächsten Abgleich überschrieben.",
+    "syncfail": "Eine Änderung, die die andere Seite nicht erreicht hat, wird 24 Stunden lang automatisch wiederholt. Sie verschwindet nie: sie bleibt hier und auf Heute, bis sie gelingt oder du sie erledigst.",
+    "fixedprice": "Diese Veranstaltung hat einen Festpreis. Hier gilt kein Rabatt — weder Classroom, noch Code, noch individuell. Ein hier eingegebener Code wird abgelehnt, bleibt aber für andere Veranstaltungen gültig.",
+    "transfer": "Der Platz geht an eine andere Person für dieselbe Veranstaltung, kostenlos, bis 7 Tage vorher. Rechnung und Zahlungen bleiben beim ursprünglichen Rechnungsempfänger; die beiden regeln das untereinander. Zertifikat und Historie gehen an die neue Person.",
+    "health": "Von jeder teilnehmenden Person spätestens 72 Stunden vor dem Check-in verlangt. Ohne sie ist ein übertragener Platz nicht gültig. Das System bewertet den Inhalt nicht — es hält nur fest, ob und wann sie abgegeben wurde.",
+    "onePerPerson": "Ein Kampagnencode kann oft verwendet werden, aber nur einmal pro Person. Robert hat eine Ausbildung nach Wahl zugesagt, nicht eine pro Ausbildung.",
+    "received": "Das Datum, an dem die Absage gesendet wurde, nicht an dem du die E-Mail geöffnet hast. Die Stornostufe wird aus diesem Datum berechnet.",
+    "bands": "Aus euren AGB. „Mehr als 60 Tage“ wird als 60 Tage oder mehr gelesen, damit Tag 60 nicht zwischen zwei Regeln fällt. Prozente beziehen sich auf den gesamten Ticketpreis, nicht auf den bezahlten Betrag.",
+    "deposit": "50 % bei der Buchung, der Rest 30 Tage vor Beginn in Rechnung gestellt — an dem Tag, an dem die 100 %-Stornostufe beginnt — und sieben Tage vorher fällig. Anmeldungen innerhalb von 30 Tagen werden sofort voll berechnet.",
+    "licvalid": "Das Zertifikat belegt den Abschluss und läuft nie ab. Die Lizenz ist das Recht zu unterrichten und muss verlängert werden. Zwei Daten, zwei Bedeutungen.",
+    "verify": "Jede Person kann diese Nummer auf der Website prüfen und sieht Name, Ausbildung und Datum. Widerrufene Zertifikate erscheinen als ungültig.",
+    "expiring": "Heute aktiv, endet aber in 30 Tagen. Diese Liste arbeitest du ab, nicht die abgelaufene.",
+    "manual": "Von Hand angelegt statt online bezahlt. Genau diese wurden früher vergessen und nie geschlossen.",
+    "toverify": "Jemand gibt an, Instructor zu sein. Bis du das bestätigst, wird kein Classroom-Rabatt gewährt."
+  },
+  "state": {
+    "loading": "Wird geladen …"
+  },
+  "errors": {
+    "rungud_bad_credentials": "E-Mail oder Passwort ist falsch.",
+    "rungud_locked": "Zu viele Versuche. Bitte warte 15 Minuten und versuche es dann noch einmal.",
+    "rungud_forbidden": "Dein Konto darf das nicht.",
+    "rungud_not_configured": "Die Anmeldung ist auf der Website noch nicht eingerichtet. Bitte sag Webni Bescheid.",
+    "rungud_invalid_token": "Deine Sitzung ist abgelaufen. Bitte melde dich neu an.",
+    "rungud_unauthenticated": "Bitte melde dich an.",
+    "rungud_site_unavailable": "Die Website hat nicht geantwortet. Es wurde nichts geändert. Versuch es in einer Minute noch einmal; wenn es wieder passiert, sag Webni Bescheid.",
+    "rungud_not_found": "Diesen Eintrag gibt es nicht (mehr).",
+    "rungud_no_woocommerce": "WooCommerce ist auf der Website nicht aktiv.",
+    "unknown": "Etwas ist schiefgegangen. Es wurde nichts geändert. Versuch es noch einmal; wenn es wieder passiert, sag Webni Bescheid."
+  },
+  "auth": {
+    "username": "E-Mail oder Benutzername",
+    "password": "Passwort",
+    "forgot": "Passwort vergessen? Setz es auf der Anmeldeseite der Website zurück — es ist dasselbe Konto.",
+    "signIn": "Anmelden",
+    "signingIn": "Anmeldung läuft …",
+    "logout": "Abmelden"
+  },
+  "roles": {
+    "owner": "Leserechte · sagt Rabatte zu",
+    "backoffice": "Backoffice",
+    "admin": "Administrator"
+  },
+  "membership": {
+    "active": "Aktiv",
+    "renews": "verlängert sich",
+    "ending": "Endet",
+    "free_access": "Kostenloser Zugang bis",
+    "none": "Keine Mitgliedschaft"
+  },
+  "today": {
+    "invoices_awaiting_approval": {
+      "t_one": "Rechnung wartet auf deine Freigabe",
+      "t_other": "Rechnungen warten auf deine Freigabe",
+      "b": "Ansehen"
+    },
+    "memberships_to_verify": {
+      "t_one": "Classroom-Mitgliedschaft wartet auf die Instructor-Prüfung",
+      "t_other": "Classroom-Mitgliedschaften warten auf die Instructor-Prüfung",
+      "b": "Liste öffnen"
+    },
+    "invoices_overdue": {
+      "t_one": "Rechnung ist überfällig",
+      "t_other": "Rechnungen sind überfällig",
+      "b": "Liste öffnen"
+    },
+    "memberships_expiring_30d": {
+      "t_one": "Mitgliedschaft läuft in den nächsten 30 Tagen ab",
+      "t_other": "Mitgliedschaften laufen in den nächsten 30 Tagen ab",
+      "b": "Liste öffnen"
+    },
+    "commands_failed": {
+      "t_one": "Änderung ist nicht auf der Website angekommen",
+      "t_other": "Änderungen sind nicht auf der Website angekommen",
+      "b": "Ansehen"
+    },
+    "code_claims_open": {
+      "t_one": "Person sagt, Robert habe ihr einen Rabatt zugesagt, hat aber keinen Code",
+      "t_other": "Personen sagen, Robert habe ihnen einen Rabatt zugesagt, haben aber keinen Code"
+    },
+    "health_declarations_missing": {
+      "t_one": "Teilnehmer:in hat die Gesundheitserklärung noch nicht abgegeben",
+      "t_other": "Teilnehmer:innen haben die Gesundheitserklärung noch nicht abgegeben"
+    },
+    "deposits_unpaid": {
+      "t_one": "Platz ist belegt, aber die Anzahlung ist nicht bezahlt",
+      "t_other": "Plätze sind belegt, aber die Anzahlung ist nicht bezahlt"
+    },
+    "licences_expiring": {
+      "t_one": "Unterrichtslizenz läuft ab oder ist bereits abgelaufen",
+      "t_other": "Unterrichtslizenzen laufen ab oder sind bereits abgelaufen",
+      "b": "Liste öffnen"
+    },
+    "licences_pending": {
+      "t_one": "selbst gemeldete Lizenz wartet auf deine Prüfung",
+      "t_other": "selbst gemeldete Lizenzen warten auf deine Prüfung",
+      "b": "Liste öffnen"
+    },
+    "messages_suggested": {
+      "t_one": "Nachricht ist vorgeschlagen und noch nicht freigegeben",
+      "t_other": "Nachrichten sind vorgeschlagen und noch nicht freigegeben"
+    },
+    "waiting_list": {
+      "t_one": "Person steht auf einer Warteliste",
+      "t_other": "Personen stehen auf Wartelisten"
+    },
+    "events_starting_soon": {
+      "t_one": "Veranstaltung beginnt in den nächsten drei Wochen",
+      "t_other": "Veranstaltungen beginnen in den nächsten drei Wochen"
+    },
+    "next_event": {
+      "t_one": "Veranstaltung steht als nächstes an",
+      "t_other": "Veranstaltungen stehen als nächstes an"
+    },
+    "registrations_7d": {
+      "t_one": "Anmeldung in den letzten 7 Tagen",
+      "t_other": "Anmeldungen in den letzten 7 Tagen"
+    },
+    "promises_unused": {
+      "t_one": "Rabattzusage von dir ist noch nicht eingelöst",
+      "t_other": "Rabattzusagen von dir sind noch nicht eingelöst",
+      "b": "Codes ansehen"
+    },
+    "code_claims_to_decide": {
+      "t_one": "Person sagt, du hättest ihr einen Rabatt zugesagt",
+      "t_other": "Personen sagen, du hättest ihnen einen Rabatt zugesagt",
+      "b": "Prüfen"
+    },
+    "watching_after_expiry": {
+      "t_one": "Person schaut weiter, obwohl ihre Mitgliedschaft abgelaufen ist",
+      "t_other": "Personen schauen weiter, obwohl ihre Mitgliedschaft abgelaufen ist",
+      "b": "Entwurf ansehen"
+    },
+    "messages_awaiting_approval": {
+      "t_one": "Nachricht wartet auf deine Freigabe",
+      "t_other": "Nachrichten warten auf deine Freigabe"
+    }
+  },
+  "people": {
+    "count_one": "{{count}} Person · die E-Mail ist der eindeutige Schlüssel",
+    "count_other": "{{count}} Personen · die E-Mail ist der eindeutige Schlüssel",
+    "searchPlaceholder": "Name oder E-Mail",
+    "search": "Suchen",
+    "noneFound": "Niemand gefunden für „{{search}}“. Prüf die Schreibweise oder such nach der E-Mail.",
+    "none": "Noch keine Personen. Personen entstehen durch die Registrierung auf der Website.",
+    "orders": "Bestellungen"
+  },
+  "person": {
+    "siteError": "Die Website hat nicht geantwortet, deshalb können Mitgliedschaft und Lizenzen gerade nicht angezeigt werden. Es wurde nichts geändert.",
+    "tabAccess": "Zugang, Mitgliedschaft, Lizenzen",
+    "tabDocuments": "Rechnungen und Bestellungen",
+    "membership": "Mitgliedschaft",
+    "noMembership": "Keine Mitgliedschaft und kein kostenloser Zugang.",
+    "plan": "Plan",
+    "status": "Status",
+    "renewsOn": "Verlängert sich am",
+    "accessUntil": "Zugang bis",
+    "daysLeft_one": "{{count}} Tag",
+    "daysLeft_other": "{{count}} Tage",
+    "freeScope": "Kostenloser Zugang für",
+    "licences": "Lizenzen",
+    "noLicences": "Keine Lizenzen.",
+    "licenceNote": "Eine Lizenz allein öffnet die Lektionen nicht. Die Person braucht zusätzlich eine aktive Mitgliedschaft oder kostenlosen Zugang. Die Website prüft beides.",
+    "recentOrders": "Letzte Bestellungen",
+    "noOrders": "Keine Bestellungen auf der Website.",
+    "qualifications": "Qualifikationen",
+    "noEducation": "Noch keine Ausbildung erfasst. Abgeschlossene Ausbildungen und Zertifikate erscheinen hier, sobald Zertifikate aus dem Backoffice ausgestellt werden.",
+    "accessInfo": "Alles auf dieser Seite lebt auf der Website (LearnDash, WooCommerce, Stripe). Das Backoffice zeigt es an; Änderungen kommen im nächsten Bauschritt — jeder Klick ist dann ein Befehl, bestätigt und protokolliert.",
+    "noLearndash": "LearnDash ist auf dieser Website nicht aktiv, deshalb können Pläne und Kursfortschritt hier nicht gelesen werden.",
+    "whatTheySee": "Was die Person gerade sieht (nur Lesen)",
+    "noCourses": "Keine eingeschriebenen Kurse.",
+    "progress": "{{done}} von {{total}} Schritten",
+    "readFromSite": "Direkt von der Website gelesen — dieselben Daten, die die Person sieht.",
+    "membershipInvoice": "Mitgliedschaft",
+    "documentsInfo": "Rechnungen kommen aus drei Quellen: WooCommerce (Veranstaltungen, Kurse), Stripe (Mitgliedschaft) und dem Backoffice (von Hand ausgestellt). Das Backoffice erzeugt die PDFs nicht neu — es holt sie und verschickt sie.",
+    "stripe_not_configured": "Stripe ist noch nicht verbunden, deshalb können Mitgliedschaftsrechnungen nicht angezeigt werden.",
+    "stripe_site_unavailable": "Die Website hat nicht geantwortet, deshalb können Mitgliedschaftsrechnungen gerade nicht angezeigt werden.",
+    "stripe_error": "Stripe hat nicht geantwortet, deshalb können Mitgliedschaftsrechnungen gerade nicht angezeigt werden.",
+    "noDocuments": "Keine Rechnungen oder Bestellungen für diese Person.",
+    "source": "Quelle",
+    "item": "Leistung",
+    "pdfNotAvailable": "PDF nicht verfügbar"
+  },
+  "plans": {
+    "membership-monthly": "Classroom · monatlich",
+    "membership-annual": "Classroom · jährlich",
+    "instructor-annual": "Instructor · jährlich",
+    "instructor-practice-annual": "Instructor + Praxis · jährlich"
+  },
+  "scope": {
+    "all": "alle Programme, für die die Person eine Lizenz hat",
+    "b2c": "nur B2C"
+  },
+  "licence": {
+    "verified": "Verifiziert",
+    "pending": "Zu prüfen",
+    "rejected": "Abgelehnt",
+    "not_submitted": "Nicht eingereicht",
+    "expired": "Abgelaufen",
+    "noExpiry": "Kein Ablauf"
+  },
+  "orderStatus": {
+    "pending": "Zahlung ausstehend",
+    "processing": "Bezahlt · in Bearbeitung",
+    "on-hold": "In Wartestellung",
+    "completed": "Abgeschlossen",
+    "cancelled": "Storniert",
+    "refunded": "Erstattet",
+    "failed": "Fehlgeschlagen",
+    "checkout-draft": "Entwurf",
+    "other": "Sonstiges"
+  },
+  "stripeStatus": {
+    "paid": "Bezahlt",
+    "open": "Offen",
+    "void": "Ungültig",
+    "draft": "Entwurf",
+    "uncollectible": "Uneinbringlich"
+  },
+  "booking": {
+    "seats-left": "Anmeldung offen",
+    "waitlist": "Nur noch Warteliste",
+    "sold-out": "Ausgebucht"
+  },
+  "events": {
+    "count_one": "{{count}} Veranstaltung",
+    "count_other": "{{count}} Veranstaltungen",
+    "upcoming": "Kommende",
+    "past": "Vergangene",
+    "all": "Alle",
+    "none": "Hier gibt es keine Veranstaltungen.",
+    "event": "Veranstaltung",
+    "booked": "Belegt",
+    "memberPrice": "Mitglieder"
+  },
+  "event": {
+    "back": "Zurück zu Veranstaltungen",
+    "placesLeft_one": "{{count}} freier Platz",
+    "placesLeft_other": "{{count}} freie Plätze",
+    "onWaitingList_one": "{{count}} auf der Warteliste",
+    "onWaitingList_other": "{{count}} auf der Warteliste",
+    "dates": "Daten",
+    "times": "Zeiten",
+    "fullPrice": "Voller Preis",
+    "priceOwner": "Preise, Daten und Plätze werden auf der Website (WooCommerce) gepflegt. Der Mitgliederpreis gilt für alle mit aktiver Mitgliedschaft.",
+    "onWebsite": "Auf der Website öffnen",
+    "orderCount_one": "{{count}} Bestellung",
+    "orderCount_other": "{{count}} Bestellungen",
+    "perOrderNote": "Eine Zeile pro Bestellung. Eine Firmenbestellung mit mehreren Plätzen erscheint als eine Zeile, bis die Namen pro Platz erfasst werden können (nächster Bauschritt).",
+    "participantsError": "Die Website hat nicht geantwortet, deshalb kann die Teilnehmerliste gerade nicht angezeigt werden.",
+    "noParticipants": "Noch niemand hat gebucht.",
+    "seats": "Plätze",
+    "orderStatus": "Bestellung",
+    "health": "Gesundheitserkl.",
+    "notRecorded": "noch nicht erfasst",
+    "waitingInfo": "Die Warteliste lebt auf der Website. Niemand rückt automatisch nach.",
+    "waitingCount_one": "{{count}} Person wartet.",
+    "waitingCount_other": "{{count}} Personen warten.",
+    "waitingNone": "Niemand wartet.",
+    "waitingNamesMissing": "Die Website gibt die Namen noch nicht heraus — nur die Anzahl. Beim Website-Team angefragt.",
+    "noHistory": "An dieser Veranstaltung wurde aus dem Backoffice nichts geändert."
+  },
+  "invoices": {
+    "sub": "WooCommerce-Bestellungen von der Website. Von Hand ausgestellte Rechnungen folgen in einem späteren Bauschritt.",
+    "tabWoo": "Website-Bestellungen",
+    "tabCms": "Von Hand ausgestellt",
+    "cmsLater": "Von Hand ausgestellte Rechnungen, Gutschriften und Zahlungen kommen in Bauschritt 5.",
+    "search": "Bestellnummer, Name oder E-Mail",
+    "none": "Keine Bestellungen gefunden.",
+    "refunded": "erstattet"
+  },
+  "members": {
+    "sub": "Alle mit einem bezahlten Plan oder kostenlosem Zugang, live von der Website gelesen.",
+    "noLearndash": "LearnDash ist auf dieser Website nicht aktiv, deshalb können bezahlte Pläne nicht gelesen werden. Es wird nur kostenloser Zugang angezeigt.",
+    "someFailed_one": "{{count}} Person konnte nicht von der Website gelesen werden.",
+    "someFailed_other": "{{count}} Personen konnten nicht von der Website gelesen werden.",
+    "f_expiring": "Läuft in 30 Tagen ab",
+    "f_ending": "Gekündigt, läuft aus",
+    "f_active": "Aktiv",
+    "f_free_access": "Kostenloser Zugang",
+    "f_all": "Alle",
+    "until": "Gültig bis",
+    "remaining": "Verbleibend",
+    "empty_expiring": "Bei niemandem endet der Zugang in den nächsten 30 Tagen.",
+    "empty_ending": "Keine gekündigten Mitgliedschaften laufen aus.",
+    "empty_active": "Keine sich verlängernden Mitgliedschaften.",
+    "empty_free_access": "Niemand hat kostenlosen Zugang.",
+    "empty_all": "Keine Mitgliedschaften."
+  },
+  "sync": {
+    "sub": "Jede Änderung, die das Backoffice an die Website geschickt hat, und jedes versendete Dokument. Neueste zuerst.",
+    "when": "Wann",
+    "who": "Wer",
+    "what": "Was",
+    "ok": "ok",
+    "failed": "Fehlgeschlagen",
+    "failedRetried": "Fehlgeschlagen · wiederholt",
+    "system": "System",
+    "notArrived_one": "{{count}} Änderung ist nicht angekommen",
+    "notArrived_other": "{{count}} Änderungen sind nicht angekommen",
+    "allArrived": "Alles ist angekommen",
+    "last72_one": "Letzte 72 Stunden: {{count}} Eintrag",
+    "last72_other": "Letzte 72 Stunden: {{count}} Einträge",
+    "log": "Protokoll",
+    "owners": "Was lebt wo",
+    "empty": "An die Website wurde noch nichts geschickt.",
+    "owner": "Wem gehört es",
+    "cmsDoes": "Was das Backoffice tut",
+    "owner_site": "Website",
+    "owner_cms": "Backoffice",
+    "owner_both": "Beide",
+    "rule": "Die eine Regel: Daten dort korrigieren, wo sie leben. Preise, Daten und Kurstexte auf der Website; Zertifikate und von Hand ausgestellte Rechnungen hier. Das Backoffice hält keine Kopie der Website-Daten — es liest sie live."
+  },
+  "owners": {
+    "people": {
+      "what": "Personen — Login, E-Mail, Profil",
+      "cms": "Liest; legt nie Konten an."
+    },
+    "events": {
+      "what": "Veranstaltungen, Kurse, Programme — Daten, Preise, Mitgliederpreise, Plätze",
+      "cms": "Liest freie Plätze, Preise und Daten."
+    },
+    "purchases": {
+      "what": "Käufe von Veranstaltungen und Kursen, ihre Rechnungen",
+      "cms": "Liest Bestellungen und PDFs, verschickt sie, erstattet über WooCommerce."
+    },
+    "attendees": {
+      "what": "Namentliche Teilnehmer:innen einer Firmenbestellung",
+      "cms": "Gudrun tippt die Namen; sie werden auf der Bestellposition auf der Website gespeichert."
+    },
+    "memberships": {
+      "what": "Mitgliedschaftspläne, Abrechnung, Mitgliedschaftsrechnungen",
+      "cms": "Liest; kündigt zum Laufzeitende / sofort / mit Erstattung; verschickt Checkout-Links."
+    },
+    "freeAccess": {
+      "what": "Kostenloser Zugang mit Enddatum",
+      "cms": "Vergibt ihn; die Website beendet ihn zum Datum."
+    },
+    "licences": {
+      "what": "Lizenzen pro Programm",
+      "cms": "Fügt hinzu, verifiziert, lehnt ab, entzieht; die Website speichert sie und öffnet Lektionen nur mit Lizenz UND Mitgliedschaft."
+    },
+    "codes": {
+      "what": "Einlöse- und Rabattcodes (WooCommerce-Gutscheine)",
+      "cms": "Legt sie an; die Website prüft sie und lässt sie ablaufen."
+    },
+    "certificates": {
+      "what": "Zertifikate, Ausbildungshistorie, Prüfseite",
+      "cms": "Stellt sie aus; die Lizenznummer auf der Website ist dieselbe Nummer."
+    },
+    "handInvoices": {
+      "what": "Von Hand ausgestellte Rechnungen, Gutschriften, Erstattungen per Überweisung",
+      "cms": "Gehören dem Backoffice — nie auf der Website."
+    },
+    "audit": {
+      "what": "Das Protokoll jeder Änderung und jedes Versands",
+      "cms": "Gehört dem Backoffice — diese Seite."
+    }
+  },
+  "later": {
+    "text": "Diese Seite entsteht in Bauschritt {{phase}}. Der freigegebene Entwurf ist im Prototyp."
   }
 }

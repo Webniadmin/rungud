@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@import "./styles/prototype.css";
+@import "./styles/app.css";
 
 /* Design tokens from docs/prototype.html (:root) — build-package.md §A6. */
 @theme {

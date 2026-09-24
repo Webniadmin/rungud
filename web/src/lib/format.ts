@@ -10,7 +10,7 @@
  */
 
 export type Lang = 'en' | 'de'
-export type Currency = 'EUR' | 'CHF'
+export type Currency = 'EUR' | 'CHF' | (string & {})
 
 const MINUS = '−'
 
@@ -32,6 +32,10 @@ export function formatMoney(amount: string | number, currency: Currency, lang: L
   const { negative, int, frac } = splitAmount(amount)
   const sign = negative ? MINUS : ''
   if (currency === 'CHF') return `CHF ${sign}${group(int, "'")}.${frac}`
+  if (currency !== 'EUR') {
+    // Anything else the shop might hold: the code, then the number in the UI language's style.
+    return lang === 'de' ? `${sign}${group(int, '.')},${frac} ${currency}` : `${currency} ${sign}${group(int, ',')}.${frac}`
+  }
   if (lang === 'de') return `${sign}${group(int, '.')},${frac} €`
   return `${sign}€${group(int, ',')}.${frac}`
 }

@@ -1,41 +1,49 @@
+import type { ReactNode } from 'react'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useAuth } from '@/auth/AuthProvider'
+import { Shell } from '@/components/Shell'
+import Login from '@/pages/Login'
+import Today from '@/pages/Today'
+import People from '@/pages/People'
+import Person from '@/pages/Person'
+import Events from '@/pages/Events'
+import Event from '@/pages/Event'
+import Invoices from '@/pages/Invoices'
+import Members from '@/pages/Members'
+import Sync from '@/pages/Sync'
+import Later from '@/pages/Later'
 
-/**
- * Phase 0 placeholder. The shell (rail, top bar, 21 screens) is rebuilt from
- * docs/prototype.html in phase 2.
- */
+function Protected({ children }: { children: ReactNode }) {
+  const { status } = useAuth()
+  const { t } = useTranslation()
+  const location = useLocation()
+  if (status === 'loading') return <div className="empty">{t('state.loading')}</div>
+  if (status === 'anonymous') return <Navigate to="/login" replace state={{ from: location.pathname + location.search }} />
+  return <Shell>{children}</Shell>
+}
+
 export default function App() {
-  const { t, i18n } = useTranslation()
   return (
-    <div className="flex min-h-screen">
-      <aside className="w-rail shrink-0 bg-slate text-rail-text">
-        <div className="px-[22px] pt-[26px] pb-[22px] text-[19px] font-medium tracking-[.06em] text-white">
-          inZENtive
-          <small className="mt-[5px] block text-xs font-normal tracking-[.02em] text-[#8DA0AE]">
-            {t('nav.backoffice')}
-          </small>
-        </div>
-      </aside>
-      <main className="flex-1 px-[34px] py-[30px]">
-        <h1 className="m-0 text-[27px] font-medium tracking-[-.01em]">{t('common.today')}</h1>
-        <p className="mt-1 text-[14.5px] text-ink-2">{t('common.allclear')}</p>
-        <div className="mt-6 flex overflow-hidden rounded-[3px] border border-line-strong w-fit">
-          {(['en', 'de'] as const).map((l) => (
-            <button
-              key={l}
-              type="button"
-              onClick={() => void i18n.changeLanguage(l)}
-              className={
-                i18n.language === l
-                  ? 'bg-slate px-[13px] py-[7px] text-sm text-white'
-                  : 'bg-white px-[13px] py-[7px] text-sm text-ink-2'
-              }
-            >
-              {l.toUpperCase()}
-            </button>
-          ))}
-        </div>
-      </main>
-    </div>
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/" element={<Navigate to="/today" replace />} />
+      <Route path="/today" element={<Protected><Today /></Protected>} />
+      <Route path="/people" element={<Protected><People /></Protected>} />
+      <Route path="/people/:id" element={<Protected><Person /></Protected>} />
+      <Route path="/events" element={<Protected><Events /></Protected>} />
+      <Route path="/events/:id" element={<Protected><Event /></Protected>} />
+      <Route path="/invoices" element={<Protected><Invoices /></Protected>} />
+      <Route path="/members" element={<Protected><Members /></Protected>} />
+      <Route path="/sync" element={<Protected><Sync /></Protected>} />
+      <Route path="/certs" element={<Protected><Later titleKey="nav.certificates" phase={6} /></Protected>} />
+      <Route path="/payments" element={<Protected><Later titleKey="common.payments" phase={5} /></Protected>} />
+      <Route path="/codes" element={<Protected><Later titleKey="nav.codes" phase={4} /></Protected>} />
+      <Route path="/insights" element={<Protected><Later titleKey="nav.insights" phase={7} /></Protected>} />
+      <Route path="/video" element={<Protected><Later titleKey="nav.video" phase={7} /></Protected>} />
+      <Route path="/messages" element={<Protected><Later titleKey="nav.messages" phase={7} /></Protected>} />
+      <Route path="/help" element={<Protected><Later titleKey="common.help" phase={7} /></Protected>} />
+      <Route path="*" element={<Navigate to="/today" replace />} />
+    </Routes>
   )
 }
