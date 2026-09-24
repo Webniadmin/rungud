@@ -54,6 +54,10 @@ final class ReadApiTest extends TestCase {
 		$this->assertSame( 'instructor-annual', $byEmail['anna@smithfitness.de']['plan'] );
 		$this->assertSame( 'none', $byEmail['peter@smithfitness.de']['membership'] );
 		$this->assertSame( 'Anna Schmidt', $byEmail['anna@smithfitness.de']['name'] );
+
+		$everyone = array_column( $this->call( 'GET', '/people' )->get_data()['items'], 'email' );
+		$this->assertNotContains( $this->gudrun->user_email, $everyone, 'staff are not people' );
+		$this->assertNotContains( $this->robert->user_email, $everyone );
 	}
 
 	public function test_person_detail_derives_membership_and_lists_orders(): void {

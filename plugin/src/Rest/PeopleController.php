@@ -56,6 +56,8 @@ final class PeopleController {
 			'order'   => 'ASC',
 			'fields'  => 'all',
 			'count_total' => true,
+			// Customers and members, not staff: the back-office logins and site admins stay out of the list.
+			'role__not_in' => array( 'administrator', \Rungud\Capabilities::ROLE_OWNER, \Rungud\Capabilities::ROLE_BACKOFFICE ),
 		);
 		if ( '' !== $search ) {
 			$args['search']         = '*' . $search . '*';

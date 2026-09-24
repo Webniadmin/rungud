@@ -54,7 +54,7 @@ function WooOrders() {
           </button>
         ))}
         <div style={{ marginLeft: 'auto' }}>
-          <SearchBox key={search} value={search} width={280} placeholder={t('invoices.search')} onSubmit={(v) => set({ search: v, page: '1' })} />
+          <SearchBox key={search} value={search} width={340} placeholder={t('invoices.search')} onSubmit={(v) => set({ search: v, page: '1' })} />
         </div>
       </div>
       {q.isLoading ? <Loading /> : null}
