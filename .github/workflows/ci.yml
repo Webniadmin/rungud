@@ -20,7 +20,7 @@ jobs:
       run:
         working-directory: plugin
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
@@ -39,19 +39,19 @@ jobs:
       run:
         working-directory: plugin
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.1'
           tools: composer:v2
           coverage: none
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
       - run: composer install --no-interaction --no-progress
       - run: npm install --no-audit --no-fund
-      - run: npx wp-env start
-      - run: composer test:integration
+      - run: ../.github/scripts/run-annotated.sh npx wp-env start
+      - run: ../.github/scripts/run-annotated.sh composer test:integration
 
   web:
     name: Frontend — lint, test, build
@@ -60,8 +60,8 @@ jobs:
       run:
         working-directory: web
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
