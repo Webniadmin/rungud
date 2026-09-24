@@ -163,10 +163,15 @@ final class Audit {
 		return array( 'items' => $items, 'total' => $total, 'page' => $page, 'pages' => (int) max( 1, ceil( $total / $per_page ) ) );
 	}
 
-	public static function count_since( string $gmt ): int {
+	/** @param list<string> $exclude_entities */
+	public static function count_since( string $gmt, array $exclude_entities = array() ): int {
 		global $wpdb;
-		$t = Schema::table( 'audit' );
-		return (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$t} WHERE created_at >= %s", $gmt ) ); // phpcs:ignore WordPress.DB.PreparedSQL
+		$t   = Schema::table( 'audit' );
+		$sql = $wpdb->prepare( "SELECT COUNT(*) FROM {$t} WHERE created_at >= %s", $gmt ); // phpcs:ignore WordPress.DB.PreparedSQL
+		foreach ( $exclude_entities as $entity ) {
+			$sql .= $wpdb->prepare( ' AND entity <> %s', $entity );
+		}
+		return (int) $wpdb->get_var( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL
 	}
 
 	/** @param array<string,mixed> $row */

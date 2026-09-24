@@ -26,7 +26,7 @@ final class AuditController {
 		$page = Audit::page( (int) $request['page'], 50, 'failed' === $request['status'] ? Audit::FAILED : null, array( 'session' ) );
 		return rest_ensure_response( $page + array(
 			'open_failures' => Audit::count_unresolved_failures(),
-			'last_72h'      => Audit::count_since( gmdate( 'Y-m-d H:i:s', time() - 72 * HOUR_IN_SECONDS ) ),
+			'last_72h'      => Audit::count_since( gmdate( 'Y-m-d H:i:s', time() - 72 * HOUR_IN_SECONDS ), array( 'session' ) ),
 		) );
 	}
 }

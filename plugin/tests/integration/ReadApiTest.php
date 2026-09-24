@@ -220,6 +220,7 @@ final class ReadApiTest extends TestCase {
 		$this->assertTrue( $data['items'][0]['open'] );
 		$this->assertSame( $failed, $data['items'][0]['id'] );
 		$this->assertSame( 1, $data['open_failures'] );
+		$this->assertSame( 1, $data['last_72h'], 'logins are not counted' );
 	}
 
 	public function test_robert_reads_every_phase_2_resource(): void {
