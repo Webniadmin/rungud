@@ -16,7 +16,8 @@ final class TodayTest extends TestCase {
 		$this->assertMatchesRegularExpression( '/^\d{4}-\d{2}-\d{2}$/', $data['date'] );
 		$this->assertSame( array(), $data['items'] );
 		$keys = array_column( TodayController::ITEMS['backoffice'], 0 );
-		$this->assertSame( array_values( array_diff( $keys, array( 'commands_failed' ) ) ), $data['not_yet_available'] );
+		// Wired so far: failed commands (phase 1) and pending licences (phase 3).
+		$this->assertSame( array_values( array_diff( $keys, array( 'commands_failed', 'licences_pending' ) ) ), $data['not_yet_available'] );
 	}
 
 	public function test_robert_gets_his_own_list(): void {
