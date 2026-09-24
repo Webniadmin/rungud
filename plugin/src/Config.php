@@ -24,6 +24,43 @@ final class Config {
 		'STRIPE_WEBHOOK_SECRET',
 	);
 
+	/**
+	 * Keys that may also come from the WP admin settings page, with their
+	 * settings key. RUNGUD_JWT_SECRET is deliberately absent: it lives only in
+	 * wp-config.php or the environment, never in the database.
+	 */
+	public const STORE_KEYS = array(
+		'RUNGUD_CORS_ORIGINS'   => 'cors_origins',
+		'RUNGUD_SMTP_HOST'      => 'smtp_host',
+		'RUNGUD_SMTP_PORT'      => 'smtp_port',
+		'RUNGUD_SMTP_USER'      => 'smtp_user',
+		'RUNGUD_SMTP_PASS'      => 'smtp_pass',
+		'RUNGUD_SMTP_FROM'      => 'smtp_from',
+		'RUNGUD_SMTP_FROM_NAME' => 'smtp_from_name',
+		'STRIPE_SECRET_KEY'     => 'stripe_secret_key',
+		'STRIPE_WEBHOOK_SECRET' => 'stripe_webhook_secret',
+	);
+
+	/** @var (callable(string):mixed)|null */
+	private static $store = null;
+
+	/** @param (callable(string):mixed)|null $store settings-key → value */
+	public static function set_store( ?callable $store ): void {
+		self::$store = $store;
+	}
+
+	/** Where a key's value comes from — shown on the settings page. */
+	public static function source( string $key ): string {
+		if ( defined( $key ) ) {
+			return 'constant';
+		}
+		$env = getenv( $key );
+		if ( false !== $env && '' !== $env ) {
+			return 'env';
+		}
+		return 'settings';
+	}
+
 	public static function get( string $key, ?string $fallback = null ): ?string {
 		if ( ! in_array( $key, self::KEYS, true ) ) {
 			throw new \InvalidArgumentException( "Unknown config key: {$key}" );
@@ -36,6 +73,12 @@ final class Config {
 		if ( false !== $env && '' !== $env ) {
 			return $env;
 		}
+		if ( self::$store && isset( self::STORE_KEYS[ $key ] ) ) {
+			$stored = ( self::$store )( self::STORE_KEYS[ $key ] );
+			if ( is_scalar( $stored ) && '' !== (string) $stored ) {
+				return (string) $stored;
+			}
+		}
 		return $fallback;
 	}
 
@@ -47,7 +90,7 @@ final class Config {
 	public static function cors_origins(): array {
 		$raw = self::get( 'RUNGUD_CORS_ORIGINS', '' ) ?? '';
 		$out = array();
-		foreach ( explode( ',', $raw ) as $origin ) {
+		foreach ( preg_split( '/[\s,]+/', $raw ) ?: array() as $origin ) {
 			$origin = rtrim( trim( $origin ), '/' );
 			if ( '' !== $origin ) {
 				$out[] = $origin;

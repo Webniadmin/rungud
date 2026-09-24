@@ -11,6 +11,25 @@ final class ConfigTest extends TestCase {
 	protected function tearDown(): void {
 		putenv( 'RUNGUD_CORS_ORIGINS' );
 		putenv( 'STRIPE_SECRET_KEY' );
+		Config::set_store( null );
+	}
+
+	public function test_settings_store_is_the_last_fallback(): void {
+		Config::set_store( static fn( string $k ) => array( 'smtp_host' => 'mail.example', 'stripe_secret_key' => 'rk_test_x' )[ $k ] ?? null );
+		$this->assertSame( 'mail.example', Config::get( 'RUNGUD_SMTP_HOST' ) );
+		putenv( 'STRIPE_SECRET_KEY=rk_test_env' );
+		$this->assertSame( 'rk_test_env', Config::get( 'STRIPE_SECRET_KEY' ) );
+		$this->assertSame( 'env', Config::source( 'STRIPE_SECRET_KEY' ) );
+	}
+
+	public function test_jwt_secret_never_comes_from_the_database(): void {
+		Config::set_store( static fn() => 'stored-secret' );
+		$this->assertNull( Config::get( 'RUNGUD_JWT_SECRET' ) );
+	}
+
+	public function test_cors_accepts_newlines(): void {
+		putenv( "RUNGUD_CORS_ORIGINS=https://a.example\nhttps://b.example" );
+		$this->assertSame( array( 'https://a.example', 'https://b.example' ), Config::cors_origins() );
 	}
 
 	public function test_unknown_key_is_refused(): void {

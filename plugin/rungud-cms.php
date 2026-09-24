@@ -28,4 +28,5 @@ if ( ! is_readable( $rungud_autoload ) ) {
 }
 require_once $rungud_autoload;
 
+register_activation_hook( __FILE__, array( Rungud\Plugin::class, 'activate' ) );
 Rungud\Plugin::instance()->boot();

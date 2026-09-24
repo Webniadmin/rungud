@@ -8,3 +8,4 @@ plugin/.phpunit.result.cache
 web/dist/
 web/.vercel/
 *.log
+plugin/.wp-env.override.json

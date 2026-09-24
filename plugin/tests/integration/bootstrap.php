@@ -18,8 +18,21 @@ tests_add_filter(
 	static function () {
 		$plugins = dirname( __DIR__, 3 );
 		require_once $plugins . '/woocommerce/woocommerce.php';
+		// Local-site runs only: LearnDash and the site's own plugins, when present.
+		if ( is_readable( $plugins . '/sfwd-lms/sfwd_lms.php' ) ) {
+			require_once $plugins . '/sfwd-lms/sfwd_lms.php';
+		}
+		foreach ( array_filter( explode( ',', (string) getenv( 'RUNGUD_TEST_SITE_PLUGINS' ) ) ) as $extra ) {
+			require_once $plugins . '/' . trim( $extra );
+		}
 		require_once dirname( __DIR__, 2 ) . '/rungud-cms.php';
 	}
 );
 
 require $tests_dir . '/includes/bootstrap.php';
+
+// Real tables for the test run (inside test methods WP turns CREATE TABLE into temporary tables).
+Rungud\Plugin::activate();
+
+require_once __DIR__ . '/TestCase.php';
+require_once __DIR__ . '/LocalSiteTestCase.php';
